@@ -109,17 +109,31 @@ class SettingsScreen extends React.Component {
 
         console.log("atob(value) = " + atob(value))
 
+
+
+
+
         const characteristic = await device.writeCharacteristicWithResponseForService(
           service, characteristicW, atob(value) /* 0x01 in hex */
         )
-  //TODO \/
-        return subscription = device.monitorCharacteristicForService(service, characteristicN, (error, characteristic) => {
+
+        console.log('writed')
+
+        // const characteristic = await this.manager.writeCharacteristicWithResponseForDevice(
+        //   device.id, service, characteristicW, atob(value)
+        // )
+
+
+
+  // TODO \/
+        subscription = device.monitorCharacteristicForService(service, characteristicN, (error, characteristic) => {
           if (error) {
             console.error(error.message)
             return
           }
           
             console.log('characteristic.value: ' + characteristic.value, btoa(characteristic.value));
+            console.log(btoa(characteristic.value));
 
             if((characteristic.value) == 'RVJST1INDT4=') {   // 'ERROR >' 
               console.ERROR("ERROR returned from ELM327");
@@ -138,8 +152,16 @@ class SettingsScreen extends React.Component {
 
     async elmInitialization (device) {
 
-      console.log("log from elmInitialization ");
-      // this.setupNotifications(device, 'command')
+      console.log("elmInitialization... ");
+      await this.setupNotifications(device, "ATZ")
+      .catch((error) => {
+        console.error(error.message)
+      })
+      await this.setupNotifications(device, "ATSP0")
+      .catch((error) => {
+        console.error(error.message)
+      })
+
     
     }
 
@@ -173,13 +195,10 @@ class SettingsScreen extends React.Component {
                                 <Button 
                                     key={device.id} 
                                     title={device.name} 
-                                    onPress={ async function () {
+                                    onPress={ async () => {
                                         await connect(device)
                                         .then(() => {
-                                          this.discoverServices(this.state.selectedDevice)
-                                        })
-                                        .then(() => {
-                                          this.elmInitialization(this.state.selectedDevice)
+                                          this.discoverServices(device)
                                         })
                                         .catch((error) => {
                                           // Handle errors
@@ -187,6 +206,42 @@ class SettingsScreen extends React.Component {
                                       });
                                         // this.manager.stopDeviceScan();
                                     } }
+                                />, 
+                                <Button 
+                                  key={device.id+'st'} 
+                                  title={'stablish'} 
+                                  onPress={ async () => {
+                                      await this.elmInitialization(device)
+                                      .catch((error) => {
+                                        // Handle errors
+                                        console.error(error.message);
+                                    });
+                                      // this.manager.stopDeviceScan();
+                                  } }
+                                />, 
+                                <Button 
+                                  key={device.id+'bgst'} 
+                                  title={'atdp'} 
+                                  onPress={ async () => {
+                                      await this.setupNotifications(device, 'ATDP')
+                                      .catch((error) => {
+                                        // Handle errors
+                                        console.error(error.message);
+                                    });
+                                      // this.manager.stopDeviceScan();
+                                  } }
+                                /> , 
+                                <Button 
+                                  key={device.id+'bg0100st'} 
+                                  title={'010C'} 
+                                  onPress={ async () => {
+                                      await this.setupNotifications(device, '010C')
+                                      .catch((error) => {
+                                        // Handle errors
+                                        console.error(error.message);
+                                    });
+                                      // this.manager.stopDeviceScan();
+                                  } }
                                 /> ]
                               })     
                         
