@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Image, Text, ImageBackground} from 'react-native';
 
-import MainLabel from '../components/MainLabel';
+import MainLabel from '../../components/MainLabel';
 
 import fetch from 'node-fetch';
 import Unsplash from 'unsplash-js';
@@ -21,7 +21,7 @@ function MainScreen({navigation}) {
       <ImageBackground
         style={styles.imgBackground}
         resizeMode="cover"
-        source={require('../assets/background.png')}>
+        source={require('../../assets/background.png')}>
         <View style={styles.carInfo}>
           <Image
             resizeMode="cover"
