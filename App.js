@@ -9,6 +9,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import MainScreen from './src/screens/MainScreen';
 import ParamsScreen from './src/screens/ParamsScreen';
 import BlackBoxMainScreen from './src/screens/BlackBoxMainScreen';
+import ExtrasScreen from './src/screens/ExtrasScreen';
 import SettingsScreen from './src/screens/SettingsScren';
 
 const Stack = createStackNavigator();
@@ -21,7 +22,7 @@ export default function App() {
         <Stack.Screen name="Params" component={ParamsScreen} />
         <Stack.Screen name="Errors" component={ParamsScreen} />
         <Stack.Screen name="BlackBox" component={BlackBoxMainScreen} />
-        <Stack.Screen name="Extras" component={ParamsScreen} />
+        <Stack.Screen name="Extras" component={ExtrasScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
