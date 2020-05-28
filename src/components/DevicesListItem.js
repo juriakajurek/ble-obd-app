@@ -6,7 +6,7 @@ const DeviceListItem = props => {
   return (
     <TouchableNativeFeedback onPress={props.onPress}>
       <View style={{...styles.label, ...props.style}}>
-        <Text style={styles.text}>{props.children}</Text>
+        <Text style={styles.text}>{props.title}</Text>
         <MaterialCommunityIcons name={props.iconName} size={26} color="black" />
       </View>
     </TouchableNativeFeedback>
