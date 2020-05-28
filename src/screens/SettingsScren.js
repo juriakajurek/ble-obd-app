@@ -12,7 +12,11 @@ import {BleManager} from 'react-native-ble-plx';
 import * as constants from '../../assets/constants';
 import {decode as btoa, encode as atob} from 'base-64';
 
-import {addDevice, addDeviceToList} from '../actions/actions';
+import {
+  addDevice,
+  addDeviceToList,
+  setSelectedDevice,
+} from '../actions/actions';
 
 async function requestLocationPermission() {
   try {
@@ -82,8 +86,6 @@ class SettingsScreen extends React.Component {
 
     await device.discoverAllServicesAndCharacteristics();
     const services = await device.services();
-
-    console.log(services);
   }
 
   async setupNotifications(device, value) {
@@ -94,9 +96,7 @@ class SettingsScreen extends React.Component {
     const characteristicN = this.notifyUUID;
 
     if (value[value.length - 1] !== '\r') {
-      value =
-        value +
-        '\r'; /* 010C in hex - RPM, 2F - fuel level [%],  5C - oil temp*/ // MUSI BYC W BASE64
+      value = value + '\r';
     }
 
     console.log('atob(value) = ' + atob(value));
@@ -117,22 +117,25 @@ class SettingsScreen extends React.Component {
           return;
         }
 
-        if (characteristic.value == 'RVJST1INDT4=') {
-          // 'ERROR >'
-          console.ERROR('ERROR returned from ELM327');
-        }
+        if (characteristic && characteristic.value) {
+          if (characteristic.value == 'RVJST1INDT4=') {
+            // 'ERROR >'
+            console.error('ERROR returned from ELM327');
+          }
 
-        if (characteristic.value != 'DT4=' && characteristic.value != 'Lg==') {
-          // '>' && '.'
-
-          console.log(
-            'characteristic.value: ' +
-              characteristic.value +
-              '   parseint :     ' +
-              parseInt('0x' + btoa(characteristic.value).replace(/\s/g, '')) +
-              '         ori :          ' +
-              btoa(characteristic.value)
-          );
+          if (
+            characteristic.value != 'DT4=' && // '>' && '.'
+            characteristic.value != 'Lg=='
+          ) {
+            console.log(
+              'characteristic.value: ' +
+                characteristic.value +
+                '   parseint :     ' +
+                parseInt('0x' + btoa(characteristic.value).replace(/\s/g, '')) +
+                '         ori :          ' +
+                btoa(characteristic.value)
+            );
+          }
         }
       }
     );
@@ -140,27 +143,41 @@ class SettingsScreen extends React.Component {
 
   // subscription.remove();
 
-  // AT D -> Set all to defaults
-  // AT Z -> Reset Obd
-  // AT E0 -> Echo off
-  // AT L0 -> Line feed off
-  // AT S0 -> Spaces off
-  // AT H0 -> Headers off
-  // AT SP 0 -> Set Protocol to 0 "Auto", search all protocols and connect it with proper protocol for that obd
-
   async elmInitialization(device) {
     console.log('elmInitialization... ');
+
     await this.setupNotifications(device, 'ATZ').catch(error => {
+      //reset obd
       console.error(error.message);
     });
-    await this.setupNotifications(device, 'ATSP0').catch(error => {
+    await this.setupNotifications(device, 'ATD').catch(error => {
+      //set all to default
+      console.error(error.message);
+    });
+
+    await this.setupNotifications(device, 'ATL0').catch(error => {
+      // Line feed off
       console.error(error.message);
     });
     await this.setupNotifications(device, 'ATS0').catch(error => {
+      // Spaces off
       console.error(error.message);
     });
-    await this.setupNotifications(device, 'ATL0').catch(error => {
-      //!!!!
+    await this.setupNotifications(device, 'ATH0').catch(error => {
+      // headers off
+      console.error(error.message);
+    });
+    await this.setupNotifications(device, 'ATE0').catch(error => {
+      // echo off
+      console.error(error.message);
+    });
+    await this.setupNotifications(device, 'CAF1').catch(error => {
+      // ENABLE FORMATING
+      console.error(error.message);
+    });
+
+    await this.setupNotifications(device, 'ATSP0').catch(error => {
+      // > Set Protocol to 0 "Auto"
       console.error(error.message);
     });
   }
@@ -204,41 +221,33 @@ class SettingsScreen extends React.Component {
                 onPress={async () => {
                   await connect(device)
                     .then(() => {
-                      this.discoverServices(device);
+                      this.discoverServices(device)
+                        .then(() => {
+                          this.elmInitialization(device)
+                            .then(() => {
+                              this.props
+                                .setSelectedDevice(device)
+                                .then(() => {
+                                  alert(
+                                    'Połączono z urządzeniem ' + device.name
+                                  );
+                                })
+                                .catch(error => {
+                                  console.error(error);
+                                });
+                            })
+                            .catch(error => {
+                              console.error(error);
+                            });
+                        })
+                        .catch(error => {
+                          console.error(error);
+                        });
                     })
                     .catch(error => {
                       console.error(error);
                     });
                   // this.manager.stopDeviceScan();
-                }}
-              />
-              <Button
-                key={device.id + 'st'}
-                title={'stablish'}
-                onPress={async () => {
-                  await this.elmInitialization(device).catch(error => {
-                    console.error(error.message);
-                  });
-                }}
-              />
-              <Button
-                key={device.id + 'bgst'}
-                title={'atdp'}
-                onPress={async () => {
-                  await this.setupNotifications(device, 'ATDP').catch(error => {
-                    console.error(error.message);
-                  });
-                }}
-              />
-              <Button
-                key={device.id + 'bg0100st'}
-                title={'010C'}
-                onPress={async () => {
-                  await this.setupNotifications(device, '010C1').catch(
-                    error => {
-                      console.error(error.message);
-                    }
-                  );
                 }}
               />
             </View>
@@ -253,7 +262,11 @@ class SettingsScreen extends React.Component {
     return (
       <View style={styles.screen}>
         <Text>Bluetooth: {this.props.bluetoothState}</Text>
-        {/* <Text>Połączone urządzenie: {this.props.selectedDevice.name}</Text> */}
+
+        <Text>
+          Połączone urządzenie:{' '}
+          {this.props.selectedDevice ? this.props.selectedDevice.name : ''}
+        </Text>
         <Button
           title="szukaj"
           onPress={() => {
@@ -282,6 +295,7 @@ const mapStateToProps = state => {
   return {
     devices: state.main.devices,
     foundDevicesList: state.main.foundDevicesList,
+    selectedDevice: state.main.selectedDevice,
   };
 };
 
@@ -289,6 +303,7 @@ const mapDispatchToProps = dispatch => {
   return {
     addDevice: device => dispatch(addDevice(device)),
     addDeviceToList: device => dispatch(addDeviceToList(device)),
+    setSelectedDevice: device => dispatch(setSelectedDevice(device)),
   };
 };
 

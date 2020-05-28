@@ -23,7 +23,10 @@ const reducer = (state = initialState, action) => {
     case 'SET_INFO':
       return action.data;
     case 'SET_SELECTED_DEVICE':
-      return action.data;
+      return {
+        ...state,
+        selectedDevice: action.data,
+      };
     case 'SET_BLUETOOTH_STATUS':
       return action.data;
     case 'SET_UUID':
