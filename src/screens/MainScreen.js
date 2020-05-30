@@ -1,5 +1,7 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, View, Image, Text, ImageBackground} from 'react-native';
+
+import {useSelector, useDispatch} from 'react-redux';
 
 import MainLabel from '../components/MainLabel';
 
@@ -7,15 +9,31 @@ import fetch from 'node-fetch';
 import Unsplash from 'unsplash-js';
 import {ScrollView} from 'react-native-gesture-handler';
 
+import {setInfo} from '../actions/actions';
+
 const APP_ACCESS_KEY = 'CW6TaFLAKKmaCH4zp58J5XrhySC9vXqEM6Li9_E9bkI';
 let carImgSrc =
   'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTC_5LzVxz_CoITcmU9DZMdhUtk1gRL2-0Qhod8Xbj2j7Rr-45h';
-let carInfo = 'Połącz się ze swoim samochodem przechodząc do Ustawień. ';
 global.fetch = fetch;
 
 const unsplash = new Unsplash({accessKey: {APP_ACCESS_KEY}});
 
 function MainScreen({navigation}) {
+  const carInfo = useSelector(state => state.main.info);
+  const selectedDevice = useSelector(state => state.main.selectedDevice);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (selectedDevice.name) {
+      // let carInfo = '';
+      dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));
+    } else {
+      dispatch(
+        setInfo('Połącz się ze swoim samochodem przechodząc do Ustawień. ')
+      );
+    }
+  });
+
   return (
     <View style={styles.screen}>
       <ImageBackground

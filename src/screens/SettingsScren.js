@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Button,
   PermissionsAndroid,
+  ScrollView,
   Alert,
 } from 'react-native';
 import {connect} from 'react-redux';
@@ -12,11 +13,15 @@ import {BleManager} from 'react-native-ble-plx';
 import * as constants from '../../assets/constants';
 import {decode as btoa, encode as atob} from 'base-64';
 
+import DeviceListItem from '../components/DevicesListItem';
+import SearchingStatus from '../components/SearchingStatus';
+
 import {
   addDevice,
   addDeviceToList,
   setSelectedDevice,
 } from '../actions/actions';
+import {TextInput} from 'react-native-gesture-handler';
 
 async function requestLocationPermission() {
   try {
@@ -59,6 +64,9 @@ class SettingsScreen extends React.Component {
     super();
     this.manager = new BleManager();
 
+    this.value = '';
+    this.response = '';
+
     this.serviceUUID = '000018F0-0000-1000-8000-00805F9B34FB';
     this.notifyUUID = '00002AF0-0000-1000-8000-00805F9B34FB';
     this.writeUUID = '00002AF1-0000-1000-8000-00805F9B34FB';
@@ -67,7 +75,7 @@ class SettingsScreen extends React.Component {
   componentDidMount() {
     requestLocationPermission();
     // if (Platform.OS === 'ios') {
-    //   this.manager.onStateChange(state => {
+    //   this.manager.onStateChange(sta-te => {
     //     if (state === 'PoweredOn') {
     //       this.setState({info: 'Wyszukiwanie dostępnych urządzeń...'});
     //       this.scanAndConnect();
@@ -81,16 +89,19 @@ class SettingsScreen extends React.Component {
     // }
   }
 
-  async discoverServices(device) {
-    console.log('discovering services; device id: ' + device.id);
+  convertStringToBinary(str) {
+    str
+      .split('')
+      .map(l => l.charCodeAt(0).toString(2))
+      .join(' ');
+  }
 
+  async discoverServices(device) {
     await device.discoverAllServicesAndCharacteristics();
-    const services = await device.services();
+    // const services = await device.services();
   }
 
   async setupNotifications(device, value) {
-    console.log('setting up notification; device id: ' + device.id);
-
     const service = this.serviceUUID;
     const characteristicW = this.writeUUID;
     const characteristicN = this.notifyUUID;
@@ -98,8 +109,6 @@ class SettingsScreen extends React.Component {
     if (value[value.length - 1] !== '\r') {
       value = value + '\r';
     }
-
-    console.log('atob(value) = ' + atob(value));
 
     const characteristic = await device.writeCharacteristicWithResponseForService(
       service,
@@ -123,18 +132,26 @@ class SettingsScreen extends React.Component {
             console.error('ERROR returned from ELM327');
           }
 
+          //PIERW 2 - START OF TXT; POTEM 1 - START OF HEADING
+
+          let tab = Array.from(btoa(characteristic.value).split(' ')); //elements in hex
+
+          let vin = tab
+            .slice(5)
+            .map(el => parseInt(el, 16))
+            .filter(el => (el >= 48 && el <= 57) || (el >= 65 && el <= 90))
+            .map(el => String.fromCharCode(el))
+            .join('');
+
           if (
             characteristic.value != 'DT4=' && // '>' && '.'
             characteristic.value != 'Lg=='
           ) {
-            console.log(
-              'characteristic.value: ' +
-                characteristic.value +
-                '   parseint :     ' +
-                parseInt('0x' + btoa(characteristic.value).replace(/\s/g, '')) +
-                '         ori :          ' +
-                btoa(characteristic.value)
-            );
+            // console.log('base :  ' + characteristic.value);
+            // console.log('ori :  ' + btoa(characteristic.value));
+            console.log(vin);
+
+            // this.response = btoa(characteristic.value);
           }
         }
       }
@@ -146,40 +163,62 @@ class SettingsScreen extends React.Component {
   async elmInitialization(device) {
     console.log('elmInitialization... ');
 
-    await this.setupNotifications(device, 'ATZ').catch(error => {
-      //reset obd
-      console.error(error.message);
-    });
-    await this.setupNotifications(device, 'ATD').catch(error => {
-      //set all to default
-      console.error(error.message);
-    });
-
-    await this.setupNotifications(device, 'ATL0').catch(error => {
-      // Line feed off
-      console.error(error.message);
-    });
-    await this.setupNotifications(device, 'ATS0').catch(error => {
-      // Spaces off
-      console.error(error.message);
-    });
-    await this.setupNotifications(device, 'ATH0').catch(error => {
-      // headers off
-      console.error(error.message);
-    });
-    await this.setupNotifications(device, 'ATE0').catch(error => {
-      // echo off
-      console.error(error.message);
-    });
-    await this.setupNotifications(device, 'CAF1').catch(error => {
-      // ENABLE FORMATING
-      console.error(error.message);
-    });
-
-    await this.setupNotifications(device, 'ATSP0').catch(error => {
-      // > Set Protocol to 0 "Auto"
-      console.error(error.message);
-    });
+    //reset obd
+    await this.setupNotifications(device, 'ATZ')
+      .finally(() => {
+        //set all to default
+        this.setupNotifications(device, 'ATD')
+          .finally(() => {
+            // Line feed off
+            this.setupNotifications(device, 'ATL0')
+              .finally(() => {
+                // Spaces off
+                this.setupNotifications(device, 'ATS0')
+                  .finally(() => {
+                    // headers off
+                    this.setupNotifications(device, 'ATH0')
+                      .finally(() => {
+                        // echo off
+                        this.setupNotifications(device, 'ATE0')
+                          .finally(() => {
+                            // ENABLE FORMATING
+                            this.setupNotifications(device, 'CAF1')
+                              .finally(() => {
+                                // > Set Protocol to 0 "Auto"
+                                this.setupNotifications(device, 'ATSP0').catch(
+                                  error => {
+                                    console.error(error.message);
+                                  }
+                                );
+                              })
+                              .catch(error => {
+                                console.error(error.message);
+                              });
+                          })
+                          .catch(error => {
+                            console.error(error.message);
+                          });
+                      })
+                      .catch(error => {
+                        // headers off
+                        console.error(error.message);
+                      });
+                  })
+                  .catch(error => {
+                    console.error(error.message);
+                  });
+              })
+              .catch(error => {
+                console.error(error.message);
+              });
+          })
+          .catch(error => {
+            console.error(error.message);
+          });
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
   }
 
   async scanAndConnect() {
@@ -214,43 +253,43 @@ class SettingsScreen extends React.Component {
           console.log(device.name);
           this.props.addDevice(device);
           this.props.addDeviceToList(
-            <View>
-              <Button
-                key={device.id}
-                title={device.name}
-                onPress={async () => {
-                  await connect(device)
-                    .then(() => {
-                      this.discoverServices(device)
-                        .then(() => {
-                          this.elmInitialization(device)
-                            .then(() => {
-                              this.props
-                                .setSelectedDevice(device)
-                                .then(() => {
-                                  alert(
-                                    'Połączono z urządzeniem ' + device.name
-                                  );
-                                })
-                                .catch(error => {
-                                  console.error(error);
-                                });
-                            })
-                            .catch(error => {
-                              console.error(error);
-                            });
-                        })
-                        .catch(error => {
-                          console.error(error);
-                        });
-                    })
-                    .catch(error => {
-                      console.error(error);
-                    });
-                  // this.manager.stopDeviceScan();
-                }}
-              />
-            </View>
+            <DeviceListItem
+              key={device.id}
+              title={device.name}
+              onPress={async () => {
+                await connect(device)
+                  .then(() => {
+                    this.discoverServices(device)
+                      .then(() => {
+                        this.elmInitialization(device)
+                          .then(() => {
+                            this.props.setSelectedDevice(device);
+                            Alert.alert(
+                              '',
+                              'Połączono z urządzeniem ' + device.name,
+                              [
+                                {
+                                  text: 'OK',
+                                  onPress: () => {},
+                                },
+                              ],
+                              {cancelable: true}
+                            );
+                          })
+                          .catch(error => {
+                            console.error(error);
+                          });
+                      })
+                      .catch(error => {
+                        console.error(error);
+                      });
+                  })
+                  .catch(error => {
+                    console.error(error);
+                  });
+                // this.manager.stopDeviceScan();
+              }}
+            />
           );
         }
         // Proceed with connection.
@@ -261,21 +300,35 @@ class SettingsScreen extends React.Component {
   render() {
     return (
       <View style={styles.screen}>
-        <Text>Bluetooth: {this.props.bluetoothState}</Text>
+        <View style={styles.heading}>
+          <Text style={styles.headerTitle}>Bluetooth</Text>
+          <Text style={styles.btStatus}>Włączony</Text>
 
-        <Text>
-          Połączone urządzenie:{' '}
-          {this.props.selectedDevice ? this.props.selectedDevice.name : ''}
-        </Text>
-        <Button
-          title="szukaj"
-          onPress={() => {
-            this.scanAndConnect();
-          }}
-        />
-        <Text>{this.props.info}</Text>
-        {this.props.foundDevicesList}
-        <Text>{this.props.rpm || '-'}</Text>
+          <Text>
+            Połączone urządzenie:{' '}
+            {this.props.selectedDevice ? this.props.selectedDevice.name : ''}
+          </Text>
+
+          <TextInput
+            onChangeText={txt => (this.value = txt)}
+            value={this.txt}
+          />
+          <Button
+            title="send"
+            onPress={() => {
+              this.setupNotifications(this.props.selectedDevice, this.value);
+            }}
+          />
+          <Text>{this.response}</Text>
+          {/* TODO wyswietlac info albo wyszukiwanie ↓ albo połaczone urządzenie */}
+          <SearchingStatus style={styles.searchingStatus} />
+
+          <Text style={styles.headerDescription}>Wyszukiwanie urządzeń...</Text>
+        </View>
+
+        <ScrollView style={styles.scroll}>
+          {this.props.foundDevicesList}
+        </ScrollView>
       </View>
     );
   }
@@ -283,10 +336,35 @@ class SettingsScreen extends React.Component {
 
 const styles = StyleSheet.create({
   screen: {
-    width: '100%',
-    height: '100%',
-    paddingTop: 40,
-    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  heading: {
+    padding: 10,
+    width: '80%',
+  },
+  headerTitle: {
+    textAlignVertical: 'center',
+    textAlign: 'center',
+    fontSize: 36,
+    color: constants.btColor,
+    fontWeight: 'bold',
+    letterSpacing: 4,
+  },
+  searchingStatus: {
+    alignSelf: 'center',
+  },
+  btStatus: {
+    textAlign: 'right',
+  },
+  headerDescription: {
+    padding: 10,
+    fontSize: 18,
+    textAlignVertical: 'center',
+    textAlign: 'center',
+  },
+  scroll: {
+    // borderColor: 'green',
+    // borderWidth: 1,
   },
 });
 

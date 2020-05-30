@@ -21,7 +21,10 @@ const reducer = (state = initialState, action) => {
         foundDevicesList: state.foundDevicesList.concat(action.data),
       };
     case 'SET_INFO':
-      return action.data;
+      return {
+        ...state,
+        info: action.data,
+      };
     case 'SET_SELECTED_DEVICE':
       return {
         ...state,
