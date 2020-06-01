@@ -6,6 +6,7 @@ import {
   SET_BLUETOOTH_STATUS,
   SET_UUID,
   SET_RPM,
+  SELECT_RPM,
 } from './types';
 
 export const addDevice = device => ({
@@ -38,7 +39,12 @@ export const setUUID = uuid => ({
   data: uuid,
 });
 
-export const setRPM = val => ({
+export const setRpm = val => ({
   type: SET_RPM,
   data: val,
+});
+
+export const selectRpm = bool => ({
+  type: SELECT_RPM,
+  data: bool,
 });

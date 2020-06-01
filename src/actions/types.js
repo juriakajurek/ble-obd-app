@@ -5,3 +5,4 @@ export const SET_SELECTED_DEVICE = 'SET_SELECTED_DEVICE';
 export const SET_BLUETOOTH_STATUS = 'SET_BLUETOOTH_STATUS';
 export const SET_UUID = 'SET_UUID';
 export const SET_RPM = 'SET_RPM';
+export const SELECT_RPM = 'SELECT_RPM';

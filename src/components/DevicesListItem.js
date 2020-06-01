@@ -2,7 +2,7 @@ import React from 'react';
 import {TouchableNativeFeedback, Text, View, StyleSheet} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 
-const DeviceListItem = props => {
+const DevicesListItem = props => {
   return (
     <TouchableNativeFeedback onPress={props.onPress}>
       <View style={{...styles.label, ...props.style}}>
@@ -37,4 +37,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DeviceListItem;
+export default DevicesListItem;
