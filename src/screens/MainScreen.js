@@ -24,8 +24,7 @@ function MainScreen({navigation}) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (selectedDevice.name) {
-      // let carInfo = '';
+    if (selectedDevice.name !== undefined) {
       dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));
     } else {
       dispatch(

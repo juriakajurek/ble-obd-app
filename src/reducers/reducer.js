@@ -7,7 +7,6 @@ const initialState = {
   selectedDevice: {},
   bluetoothState: '',
   info: '',
-  rpm: '',
   uuid: '',
 };
 
@@ -33,8 +32,6 @@ const reducer = (state = initialState, action) => {
     case 'SET_BLUETOOTH_STATUS':
       return action.data;
     case 'SET_UUID':
-      return action.data;
-    case 'SET_RPM':
       return action.data;
     default:
       return state;
