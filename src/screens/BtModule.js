@@ -261,7 +261,7 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default (Module = connect(
+export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(BtModule));
+)(BtModule);
