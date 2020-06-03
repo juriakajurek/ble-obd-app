@@ -7,6 +7,9 @@ import {
   SET_UUID,
   SET_RPM,
   SELECT_RPM,
+  SET_TRAVELING,
+  SET_BUTTON_TEXT,
+  SET_BUTTON_ICON,
 } from './types';
 
 export const addDevice = device => ({
@@ -47,4 +50,19 @@ export const setRpm = val => ({
 export const selectRpm = bool => ({
   type: SELECT_RPM,
   data: bool,
+});
+
+export const setTraveling = bool => ({
+  type: SET_TRAVELING,
+  data: bool,
+});
+
+export const setButtonText = txt => ({
+  type: SET_BUTTON_TEXT,
+  data: txt,
+});
+
+export const setButtonIcon = iconName => ({
+  type: SET_BUTTON_ICON,
+  data: iconName,
 });

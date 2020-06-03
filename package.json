@@ -10,6 +10,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@nozbe/watermelondb": "^0.16.1",
+    "@nozbe/with-observables": "^1.0.5",
     "@react-native-community/masked-view": "^0.1.7",
     "@react-navigation/drawer": "^5.3.2",
     "@react-navigation/native": "^5.1.1",
@@ -30,14 +32,16 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-axios-middleware": "^4.0.1",
+    "typescript": "^3.9.3",
     "unsplash-js": "^6.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.9.0",
+    "@babel/plugin-proposal-decorators": "^7.10.1",
     "@babel/runtime": "7.9.2",
     "@react-native-community/eslint-config": "0.0.5",
     "babel-jest": "24.9.0",
-    "eslint": "6.8.0",
+    "eslint": "^5.16.0",
     "jest": "24.9.0",
     "metro-react-native-babel-preset": "0.56.4",
     "react-test-renderer": "16.9.0"
