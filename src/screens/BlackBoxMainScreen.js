@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, View, Image, Text, ImageBackground} from 'react-native';
 
+import * as constants from '../../assets/constants';
 import MainLabel from '../components/MainLabel';
 import Cube from '../components/Cube';
 
@@ -49,7 +50,7 @@ function BlackBoxMainScreen({navigation}) {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: '#ddd',
+    backgroundColor: constants.bgColor,
     width: '100%',
     height: '100%',
   },

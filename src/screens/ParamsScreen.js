@@ -1,21 +1,30 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-
 import {useSelector, useDispatch} from 'react-redux';
 
-import {setRpm, selectRpm} from '../actions/actions';
+import {setRpm, setRpmSelected} from '../actions/actions';
 
+import * as constants from '../../assets/constants';
 import ParamLabel from '../components/ParamLabel';
 
 const ParamsScreen = props => {
-  // const rpm = useSelector(state => state.params.rpm);
+  const rpm = useSelector(state => state.params.rpm);
   const isRpmSelected = useSelector(state => state.params.isRpmSelected);
+  const btModule = useSelector(state => state.main.btModule);
+  const selectedDevice = useSelector(state => state.main.selectedDevice);
+  const response = useSelector(state => state.main.response);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log(isRpmSelected);
+    // console.log(isRpmSelected);
   });
+
+  const getRpm = () => {
+    btModule.setupNotifications(selectedDevice, '010C').then(() => {
+      console.log(response.toString(10));
+    });
+  };
 
   return (
     <View style={styles.screen}>
@@ -32,10 +41,13 @@ const ParamsScreen = props => {
         <ParamLabel
           isSelected={isRpmSelected}
           title="Obroty silnika"
-          value="1200"
-          onPress={() => {}}
+          value={rpm}
+          onPress={() => {
+            getRpm();
+            dispatch(setRpm(200));
+          }}
           onLongPress={() => {
-            dispatch(selectRpm(!isRpmSelected));
+            dispatch(setRpmSelected(!isRpmSelected));
           }}
         />
         <ParamLabel
@@ -64,6 +76,7 @@ const ParamsScreen = props => {
 
 const styles = StyleSheet.create({
   screen: {
+    backgroundColor: constants.bgColor,
     marginTop: 15,
     width: '100%',
     height: '100%',
