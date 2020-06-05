@@ -1,4 +1,4 @@
-import {SET_RPM, SELECT_RPM} from '../actions/types';
+import {SET_RPM, SET_RPM_SELECTED} from '../actions/types';
 import {} from '../actions/actions';
 
 const initialState = {
@@ -13,7 +13,7 @@ const paramReducer = (state = initialState, action) => {
         ...state,
         rpm: action.data,
       };
-    case SELECT_RPM:
+    case SET_RPM_SELECTED:
       return {
         ...state,
         isRpmSelected: action.data,

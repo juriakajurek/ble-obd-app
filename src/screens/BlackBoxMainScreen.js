@@ -11,6 +11,7 @@ import {
 import {useSelector, useDispatch} from 'react-redux';
 import {setTraveling, setButtonText, setButtonIcon} from '../actions/actions';
 
+import * as constants from '../../assets/constants';
 import MainLabel from '../components/MainLabel';
 import Cube from '../components/Cube';
 
@@ -120,7 +121,7 @@ function BlackBoxMainScreen({database}) {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: '#ddd',
+    backgroundColor: constants.bgColor,
     width: '100%',
     height: '100%',
   },
