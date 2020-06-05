@@ -1,8 +1,11 @@
+export const SET_BT_MODULE = 'SET_BTMODULE';
 export const ADD_DEVICE = 'ADD_DEVICE';
 export const ADD_DEVICE_TO_LIST = 'ADD_DEVICE_TO_LIST';
+export const ADD_TO_RESPONSE = 'ADD_TO_RESPONSE';
 export const SET_INFO = 'SET_INFO';
 export const SET_SELECTED_DEVICE = 'SET_SELECTED_DEVICE';
 export const SET_BLUETOOTH_STATUS = 'SET_BLUETOOTH_STATUS';
 export const SET_UUID = 'SET_UUID';
 export const SET_RPM = 'SET_RPM';
-export const SELECT_RPM = 'SELECT_RPM';
+export const SET_RPM_SELECTED = 'SET_RPM_SELECTED';
+export const SET_BT_SEARCHING = 'SET_BT_SEARCHING';

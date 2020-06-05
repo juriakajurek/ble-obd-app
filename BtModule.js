@@ -1,34 +1,15 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Button,
-  PermissionsAndroid,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import {connect} from 'react-redux';
+import {Alert, TouchableNativeFeedbackBase} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
-import * as constants from '../../assets/constants';
+import * as constants from './assets/constants';
 import {decode as btoa, encode as atob} from 'base-64';
-
-import DeviceListItem from '../components/DevicesListItem';
-import SearchingStatus from '../components/SearchingStatus';
-
-import {
-  addDevice,
-  addDeviceToList,
-  setSelectedDevice,
-} from '../actions/actions';
+import DeviceListItem from './src/components/DevicesListItem';
 
 class BtModule extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.manager = new BleManager();
-
-    this.value = '';
-    this.response = '';
+    this.subscription = {};
 
     this.serviceUUID = '000018F0-0000-1000-8000-00805F9B34FB';
     this.notifyUUID = '00002AF0-0000-1000-8000-00805F9B34FB';
@@ -62,8 +43,7 @@ class BtModule extends React.Component {
       atob(value) /* 0x01 in hex */
     );
 
-    // TODO \/
-    subscription = device.monitorCharacteristicForService(
+    this.subscription = device.monitorCharacteristicForService(
       service,
       characteristicN,
       (error, characteristic) => {
@@ -78,9 +58,8 @@ class BtModule extends React.Component {
             console.error('ERROR returned from ELM327');
           }
 
-          //PIERW 2 - START OF TXT; POTEM 1 - START OF HEADING
-
           let tab = Array.from(btoa(characteristic.value).split(' ')); //elements in hex
+          this.props.setResponse(tab);
 
           let vin = tab
             .slice(5)
@@ -95,20 +74,16 @@ class BtModule extends React.Component {
           ) {
             // console.log('base :  ' + characteristic.value);
             // console.log('ori :  ' + btoa(characteristic.value));
-            console.log(vin);
-
-            // this.response = btoa(characteristic.value);
+            // console.log(vin);
           }
         }
       }
     );
+    this.subscription.remove();
   }
-
-  // subscription.remove();
 
   async elmInitialization(device) {
     console.log('elmInitialization... ');
-
     //reset obd
     await this.setupNotifications(device, 'ATZ')
       .finally(() => {
@@ -168,7 +143,7 @@ class BtModule extends React.Component {
   }
 
   async scanAndConnect() {
-    console.log('device scanning starting................');
+    console.log('scanning for devices...');
 
     this.manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
@@ -181,7 +156,7 @@ class BtModule extends React.Component {
         await this.manager
           .connectToDevice(device.id)
           .then(() => {
-            this.setState({selectedDevice: device});
+            this.props.setSelectedDevice(device);
           })
           .catch(error => {
             // Handle errors
@@ -192,12 +167,12 @@ class BtModule extends React.Component {
 
       if (device.name != null) {
         if (
-          this.props.devices.find(el => {
+          this.props.getDevices().find(el => {
             return el.id === device.id;
           }) === undefined
         ) {
-          console.log(device.name);
           this.props.addDevice(device);
+
           this.props.addDeviceToList(
             <DeviceListItem
               key={device.id}
@@ -221,6 +196,8 @@ class BtModule extends React.Component {
                               ],
                               {cancelable: true}
                             );
+                            this.props.setBtSearching(false);
+                            this.manager.stopDeviceScan();
                           })
                           .catch(error => {
                             console.error(error);
@@ -233,7 +210,6 @@ class BtModule extends React.Component {
                   .catch(error => {
                     console.error(error);
                   });
-                // this.manager.stopDeviceScan();
               }}
             />
           );
@@ -244,24 +220,4 @@ class BtModule extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
-  console.log(state);
-  return {
-    devices: state.main.devices,
-    foundDevicesList: state.main.foundDevicesList,
-    selectedDevice: state.main.selectedDevice,
-  };
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    addDevice: device => dispatch(addDevice(device)),
-    addDeviceToList: device => dispatch(addDeviceToList(device)),
-    setSelectedDevice: device => dispatch(setSelectedDevice(device)),
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(BtModule);
+export default BtModule;
