@@ -10,6 +10,9 @@ import {
   SET_UUID,
   SET_RPM,
   SET_RPM_SELECTED,
+  SET_TRAVELING,
+  SET_BUTTON_TEXT,
+  SET_BUTTON_ICON,
 } from './types';
 
 export const setBtModule = mod => ({
@@ -64,4 +67,19 @@ export const setRpmSelected = bool => ({
 export const setBtSearching = bool => ({
   type: SET_BT_SEARCHING,
   data: bool,
+});
+
+export const setTraveling = bool => ({
+  type: SET_TRAVELING,
+  data: bool,
+});
+
+export const setButtonText = txt => ({
+  type: SET_BUTTON_TEXT,
+  data: txt,
+});
+
+export const setButtonIcon = iconName => ({
+  type: SET_BUTTON_ICON,
+  data: iconName,
 });
