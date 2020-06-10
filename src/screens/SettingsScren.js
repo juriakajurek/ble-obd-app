@@ -10,7 +10,7 @@ import {
 import {connect} from 'react-redux';
 import * as constants from '../../assets/constants';
 
-import BtModule from '../../BtModule';
+import BtModule from '../BtModule';
 import DeviceListItem from '../components/DevicesListItem';
 import SearchingStatus from '../components/SearchingStatus';
 import {BluetoothStatus} from 'react-native-bluetooth-status';
@@ -165,21 +165,6 @@ class SettingsScreen extends React.Component {
               <Text style={{...styles.btStatus, color: 'red'}}> Wyłączony</Text>
             </View>
           )}
-
-          {/* <Text>{this.props.response}</Text>
-          <TextInput
-            onChangeText={txt => (this.value = txt)}
-            value={this.txt}
-          />
-          <Button
-            title="send"
-            onPress={() => {
-              this.module.setupNotifications(
-                this.props.selectedDevice,
-                this.value
-              );
-            }}
-          /> */}
         </View>
       </View>
     );

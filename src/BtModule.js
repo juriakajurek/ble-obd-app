@@ -1,9 +1,9 @@
 import React from 'react';
 import {Alert, TouchableNativeFeedbackBase} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
-import * as constants from './assets/constants';
+import * as constants from '../assets/constants';
 import {decode as btoa, encode as atob} from 'base-64';
-import DeviceListItem from './src/components/DevicesListItem';
+import DeviceListItem from './components/DevicesListItem';
 
 class BtModule extends React.Component {
   constructor(props) {
@@ -28,10 +28,12 @@ class BtModule extends React.Component {
     // const services = await device.services();
   }
 
-  async setupNotifications(device, value) {
+  async setupNotifications(device, value, callback) {
     const service = this.serviceUUID;
     const characteristicW = this.writeUUID;
     const characteristicN = this.notifyUUID;
+
+    console.log('LOG from setupNotifications, ' + device.name + '  ' + value);
 
     if (value[value.length - 1] !== '\r') {
       value = value + '\r';
@@ -59,7 +61,13 @@ class BtModule extends React.Component {
           }
 
           let tab = Array.from(btoa(characteristic.value).split(' ')); //elements in hex
-          this.props.setResponse(tab);
+
+          if (typeof callback !== 'function') {
+            callback = false;
+          }
+          if (callback) {
+            callback(btoa(characteristic.value));
+          }
 
           let vin = tab
             .slice(5)
@@ -79,7 +87,7 @@ class BtModule extends React.Component {
         }
       }
     );
-    this.subscription.remove();
+    // this.subscription.remove();
   }
 
   async elmInitialization(device) {

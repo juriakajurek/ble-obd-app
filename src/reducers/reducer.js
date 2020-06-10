@@ -1,10 +1,11 @@
 import {
+  SET_INFO,
   SET_BT_MODULE,
   SET_BLUETOOTH_STATUS,
   SET_BT_SEARCHING,
+  SET_SELECTED_DEVICE,
   ADD_DEVICE,
   ADD_DEVICE_TO_LIST,
-  ADD_TO_RESPONSE,
 } from '../actions/types';
 import {} from '../actions/actions';
 
@@ -14,9 +15,7 @@ const initialState = {
   foundDevicesList: [],
   selectedDevice: {},
   bluetoothStatus: '',
-  response: '',
   info: '',
-  uuid: '',
   isBtSearching: false,
 };
 
@@ -29,41 +28,31 @@ const reducer = (state = initialState, action) => {
         ...state,
         foundDevicesList: state.foundDevicesList.concat(action.data),
       };
-    case ADD_TO_RESPONSE:
-      return {
-        ...state,
-        response: state.response.concat(action.data),
-      };
-    case 'SET_INFO':
+    case SET_INFO:
       return {
         ...state,
         info: action.data,
       };
-
     case SET_BT_MODULE:
       return {
         ...state,
         btModule: action.data,
       };
-
     case SET_BT_SEARCHING:
       return {
         ...state,
         isBtSearching: action.data,
-      };
-
-    case 'SET_SELECTED_DEVICE':
-      return {
-        ...state,
-        selectedDevice: action.data,
       };
     case SET_BLUETOOTH_STATUS:
       return {
         ...state,
         bluetoothStatus: action.data,
       };
-    case 'SET_UUID':
-      return action.data;
+    case SET_SELECTED_DEVICE:
+      return {
+        ...state,
+        selectedDevice: action.data,
+      };
     default:
       return state;
   }
