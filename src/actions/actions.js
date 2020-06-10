@@ -6,6 +6,9 @@ import {
   SET_INFO,
   SET_SELECTED_DEVICE,
   SET_BLUETOOTH_STATUS,
+  SET_TRAVELING,
+  SET_BUTTON_TEXT,
+  SET_BUTTON_ICON,
   SET_ENGINE_LOAD,
   SET_ENGINE_LOAD_SELECTED,
   SET_COOLANT_TEMPERATURE,
@@ -148,4 +151,19 @@ export const setAirFlowRate = val => ({
 export const setAirFlowRateSelected = bool => ({
   type: SET_AIR_FLOW_RATE_SELECTED,
   data: bool,
+});
+
+export const setTraveling = bool => ({
+  type: SET_TRAVELING,
+  data: bool,
+});
+
+export const setButtonText = txt => ({
+  type: SET_BUTTON_TEXT,
+  data: txt,
+});
+
+export const setButtonIcon = iconName => ({
+  type: SET_BUTTON_ICON,
+  data: iconName,
 });

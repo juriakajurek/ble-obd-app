@@ -64,9 +64,6 @@ const Cube = props => {
     refViewBottom.setNativeProps({
       style: {transform: [{perspective: 1000}, {matrix: matrix}]},
     });
-
-    props.setTravelling(false);
-    props.setTravelling(true); // only for rerender :(
   };
 
   const rotateXY = (dx, dy) => {
@@ -184,7 +181,7 @@ const Cube = props => {
           style: {transform: [{perspective: 1000}, {matrix: matrix}]},
         });
       },
-    }),
+    })
   ).current;
 
   const renderLeft = color => {
