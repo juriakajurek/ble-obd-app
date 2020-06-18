@@ -17,11 +17,11 @@ const styles = StyleSheet.create({
   labelContainer: {
     maxWidth: '80%',
     minWidth: '80%',
-    padding: 20,
+    padding: 15,
     margin: 8,
 
     backgroundColor: 'white',
-    opacity: 0.65,
+    opacity: 0.9,
 
     flexDirection: 'row',
     justifyContent: 'space-between',

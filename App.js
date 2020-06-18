@@ -5,6 +5,7 @@ import {StyleSheet} from 'react-native';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+import * as constants from './assets/constants';
 
 import MainScreen from './src/screens/MainScreen';
 import ParamsScreen from './src/screens/ParamsScreen';
@@ -15,16 +16,57 @@ import TroubleCodesScreen from './src/screens/TroubleCodesScreen';
 
 const Stack = createStackNavigator();
 
+const options = {
+  headerStyle: {
+    backgroundColor: '#fefefe',
+  },
+  headerTitleStyle: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+};
+
 export default function App() {
   return (
     <NavigationContainer style={styles.screen}>
-      <Stack.Navigator headerMode="none">
-        <Stack.Screen name="Home" component={MainScreen} />
-        <Stack.Screen name="Params" component={ParamsScreen} />
-        <Stack.Screen name="Errors" component={TroubleCodesScreen} />
-        <Stack.Screen name="BlackBox" component={BlackBoxMainScreen} />
-        <Stack.Screen name="Extras" component={ExtrasScreen} />
-        <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Navigator headerMode="float">
+        <Stack.Screen
+          name="Home"
+          component={MainScreen}
+          options={{...options, title: 'Diagnostic Boa'}}
+        />
+        <Stack.Screen
+          name="Params"
+          component={ParamsScreen}
+          options={{...options, title: 'Parametry pojazdu'}}
+        />
+        <Stack.Screen
+          name="Errors"
+          component={TroubleCodesScreen}
+          options={{
+            ...options,
+            title: 'Błędy silnika',
+          }}
+        />
+        <Stack.Screen
+          name="BlackBox"
+          component={BlackBoxMainScreen}
+          options={{...options, title: 'Czarna skrzynka'}}
+        />
+        <Stack.Screen
+          name="Extras"
+          component={ExtrasScreen}
+          options={{...options, title: 'Extras'}}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            ...options,
+            title: 'Ustawienia',
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

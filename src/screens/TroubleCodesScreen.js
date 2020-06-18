@@ -18,12 +18,14 @@ const TroubleCodesScreen = props => {
   return (
     <View style={styles.screen}>
       <View style={styles.heading}>
-        <Text style={styles.headerTitle}>Błędy silnika</Text>
-
         {!areCodesShown ? (
           <View style={styles.logo}>
             <LottieView
-              style={{...styles.animation, ...props.style}}
+              style={{
+                ...styles.animation,
+                ...props.style,
+              }}
+              resizeMode="cover"
               source={require('../../assets/error.json')}
               autoPlay
               loop
@@ -79,7 +81,6 @@ const TroubleCodesScreen = props => {
 const styles = StyleSheet.create({
   screen: {
     backgroundColor: constants.bgColor,
-    marginTop: 15,
     width: '100%',
     height: '100%',
     justifyContent: 'flex-end',
@@ -91,17 +92,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 3,
   },
-  headerTitle: {
-    textAlignVertical: 'center',
-    textAlign: 'center',
-    fontSize: 36,
-    color: '#6FA8AF',
-    fontWeight: 'bold',
-    letterSpacing: 3,
-  },
   logo: {
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
   },
   labelContainer: {
     marginTop: 40,

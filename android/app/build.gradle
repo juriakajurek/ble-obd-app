@@ -130,7 +130,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.obdapp"
+        applicationId "com.diagnosticboa"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

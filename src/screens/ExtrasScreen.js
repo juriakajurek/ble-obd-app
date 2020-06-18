@@ -15,11 +15,12 @@ const TroubleCodesScreen = props => {
   return (
     <View style={styles.screen}>
       <View style={styles.heading}>
-        <Text style={styles.headerTitle}>Extras</Text>
+        {/* <Text style={styles.headerTitle}>Extras</Text> */}
         <View style={styles.logo}>
           <LottieView
             style={{...styles.animation, ...props.style}}
             source={require('../../assets/gift.json')}
+            resizeMode="cover"
             autoPlay
             loop
           />
@@ -41,7 +42,6 @@ const TroubleCodesScreen = props => {
 const styles = StyleSheet.create({
   screen: {
     backgroundColor: constants.bgColor,
-    marginTop: 15,
     width: '100%',
     height: '100%',
     justifyContent: 'flex-end',
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
   },
   buttonContainer: {
     marginBottom: 20,
