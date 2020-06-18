@@ -3,7 +3,6 @@ import {
   SET_BUTTON_TEXT,
   SET_BUTTON_ICON,
 } from '../actions/types';
-import {} from '../actions/actions';
 
 const initialState = {
   isTraveling: false,

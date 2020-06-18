@@ -11,6 +11,7 @@ import ParamsScreen from './src/screens/ParamsScreen';
 import BlackBoxMainScreen from './src/screens/BlackBoxMainScreen';
 import ExtrasScreen from './src/screens/ExtrasScreen';
 import SettingsScreen from './src/screens/SettingsScren';
+import TroubleCodesScreen from './src/screens/TroubleCodesScreen';
 
 const Stack = createStackNavigator();
 
@@ -20,7 +21,7 @@ export default function App() {
       <Stack.Navigator headerMode="none">
         <Stack.Screen name="Home" component={MainScreen} />
         <Stack.Screen name="Params" component={ParamsScreen} />
-        <Stack.Screen name="Errors" component={ParamsScreen} />
+        <Stack.Screen name="Errors" component={TroubleCodesScreen} />
         <Stack.Screen name="BlackBox" component={BlackBoxMainScreen} />
         <Stack.Screen name="Extras" component={ExtrasScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />

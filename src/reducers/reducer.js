@@ -7,7 +7,6 @@ import {
   ADD_DEVICE,
   ADD_DEVICE_TO_LIST,
 } from '../actions/types';
-import {} from '../actions/actions';
 
 const initialState = {
   btModule: {},

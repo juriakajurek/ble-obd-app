@@ -15,8 +15,8 @@ const MainLabel = props => {
 
 const styles = StyleSheet.create({
   labelContainer: {
-    width: '70%',
-    height: '14%',
+    maxWidth: '80%',
+    minWidth: '80%',
     padding: 20,
     margin: 8,
 
@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   text: {
+    width: '70%',
     color: 'black',
     fontSize: 15,
     fontWeight: 'bold',

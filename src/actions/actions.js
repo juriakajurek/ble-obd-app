@@ -27,6 +27,7 @@ import {
   SET_INTAKE_AIR_TEMPERATURE_SELECTED,
   SET_AIR_FLOW_RATE,
   SET_AIR_FLOW_RATE_SELECTED,
+  SET_CODES_SHOWN,
 } from './types';
 
 export const setBtModule = mod => ({
@@ -166,4 +167,9 @@ export const setButtonText = txt => ({
 export const setButtonIcon = iconName => ({
   type: SET_BUTTON_ICON,
   data: iconName,
+});
+
+export const setCodesShown = bool => ({
+  type: SET_CODES_SHOWN,
+  data: bool,
 });
