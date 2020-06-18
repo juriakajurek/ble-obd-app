@@ -1,4 +1,4 @@
-package com.obdapp;
+package com.diagnosticboa;
 import com.nozbe.watermelondb.WatermelonDBPackage;
 
 import android.app.Application;

@@ -1,3 +1,3 @@
-export const AppName = 'Obd App';
+export const AppName = 'Diagnostic Boa';
 export const btColor = '#21AFC9';
-export const bgColor = '#dedede';
+export const bgColor = '#ededed';
