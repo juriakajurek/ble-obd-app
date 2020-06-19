@@ -8,18 +8,15 @@ export const responseConverter = (code, hex) => {
     case '05': //Temperatura płynu chłodzącego [°C]
       value = parseInt(hex[0], 16) - 40;
       return value.toString();
-
     case '0A': //cisnienie paliwa [kPa]
       value = parseInt(hex[0], 16) * 3;
       return value.toString();
     case '0B': //ciśnienie w kolektorze dolotowym
       value = parseInt(hex[0], 16);
       return value.toString();
-
     case '0C': //Prędkość obrotowa silnika
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 4;
       return value.toString();
-
     case '0D': //prędkość pojazdu
       value = parseInt(hex[0], 16);
       return value.toString();
@@ -32,15 +29,12 @@ export const responseConverter = (code, hex) => {
     case '10': //przepływ powietrza w gramach na sekundę [0 - 655.35]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 100;
       return value.toString();
-
-    case '11': //stopień otwarcia przepustnicy 0%-100%
+    case '11': //pozycja przepustnicy 0%-100%
       value = parseInt(hex[0], 16) / 2.55;
       return value.toString();
-
-    case '1F': //czas który upłynął od uruchomienia silnika od 0	do 65535	seconds
+    case '1F': //czas, który upłynął od uruchomienia silnika od 0	do 65535	seconds
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
       return value.toString();
-
     case '21': //przejechany dystans od zapalenia kontrolki sygnalizującej usterki
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
       return value.toString();
@@ -59,7 +53,7 @@ export const responseConverter = (code, hex) => {
     case '2F': // poziom paliwa [0 do 100%]
       value = parseInt(hex[0], 16) / 2.55;
       return value.toString();
-    case '30': //liczba uruchomień od czasu wykasowania pamięci błędów (0 do 255)
+    case '30': //liczba uruchomień silnika od czasu wykasowania pamięci błędów (0 do 255)
       value = parseInt(hex[0], 16);
       return value.toString();
     case '31': //przejechany dystans od wykasowania pamięci błędów (0 do 65535)
@@ -151,20 +145,20 @@ export const responseConverter = (code, hex) => {
     case '5E': //spalanie silnika [L\h]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 20;
       return value.toString();
-    case '63': //moment obrotowy silnika (referencyjny) [Nm]
-      value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+    case '61': //zadany moment obrotowy silnika [%]
+      value = parseInt(hex[0], 16) - 125;
       return value.toString();
-    case '67': //temperatura cieczy chłodzącej
-      value = parseInt(hex[0], 16) - 40;
+    case '62': //rzeczywisty moment obrotowy silnika [%]
+      value = parseInt(hex[0], 16) - 125;
+      return value.toString();
+    case '63': //moment obrotowy silnika (względny) [Nm]
+      value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
       return value.toString();
     case '7C': //temperatura DPF(Diesel Particulate filter) [°C]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 10 - 40;
       return value.toString();
     case '7F': //czas pracy silnika [sec]
       value = parseInt(hex[0], 16);
-      return value.toString();
-    case '9D': //spalanie silnika [g/s]
-      value = parseInt(hex[0], 16) / 2.55; //??
       return value.toString();
   }
 };
