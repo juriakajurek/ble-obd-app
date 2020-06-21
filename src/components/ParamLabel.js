@@ -44,7 +44,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     // fontWeight: 'bold',
   },
-  value: {fontSize: 18, fontWeight: 'bold'},
+  value: {
+    width: '30%',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
 export default ParamLabel;

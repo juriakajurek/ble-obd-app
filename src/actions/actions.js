@@ -9,6 +9,8 @@ import {
   SET_TRAVELING,
   SET_BUTTON_TEXT,
   SET_BUTTON_ICON,
+  SET_TROUBLE_CODES,
+  SET_TROUBLE_CODES_QUANTITY,
   SET_ENGINE_LOAD,
   SET_ENGINE_LOAD_SELECTED,
   SET_COOLANT_TEMPERATURE,
@@ -504,5 +506,15 @@ export const setButtonIcon = iconName => ({
 
 export const setCodesShown = bool => ({
   type: SET_CODES_SHOWN,
+  data: bool,
+});
+
+export const setTroubleCodesQuantity = iconName => ({
+  type: SET_TROUBLE_CODES_QUANTITY,
+  data: iconName,
+});
+
+export const setTroubleCodes = bool => ({
+  type: SET_TROUBLE_CODES,
   data: bool,
 });

@@ -7,78 +7,103 @@ export const responseConverter = (code, hex) => {
       return value.toString();
     case '05': //Temperatura płynu chłodzącego [°C]
       value = parseInt(hex[0], 16) - 40;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0A': //cisnienie paliwa [kPa]
       value = parseInt(hex[0], 16) * 3;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0B': //ciśnienie w kolektorze dolotowym
       value = parseInt(hex[0], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0C': //Prędkość obrotowa silnika
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 4;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0D': //prędkość pojazdu
       value = parseInt(hex[0], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0E': // Timing advance  -	° przed górnym martwym położeniem [od -64° do 63.5°]
       value = parseInt(hex[0], 16) / 2 - 64;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '0F': //temperatura pobieranego powietrza
       value = parseInt(hex[0], 16) - 40;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '10': //przepływ powietrza w gramach na sekundę [0 - 655.35]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 100;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '11': //pozycja przepustnicy 0%-100%
       value = parseInt(hex[0], 16) / 2.55;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '1F': //czas, który upłynął od uruchomienia silnika od 0	do 65535	seconds
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '21': //przejechany dystans od zapalenia kontrolki sygnalizującej usterki
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '22': //	ciśnienie w szynie paliwa w stosunku do ciśnienia w kolektorze dolotowym
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) * 0.079;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '23': //	wskazanie czujnika ciśnienia w szynie paliwa
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) * 10;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '2C': //zadany dla EGR stopień recyrkulacji spalin [0%-100%]
       value = parseInt(hex[0], 16) / 2.55;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '2D': //błąd EGR obliczany z różnicy pomiędzy wartością zadaną a rzeczywistą zaworu EGR [-100 do 100%]
       value = parseInt(hex[0], 16) / 1.28 - 100;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '2F': // poziom paliwa [0 do 100%]
       value = parseInt(hex[0], 16) / 2.55;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '30': //liczba uruchomień silnika od czasu wykasowania pamięci błędów (0 do 255)
       value = parseInt(hex[0], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '31': //przejechany dystans od wykasowania pamięci błędów (0 do 65535)
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '42': //napięcie modułu sterującego [V]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 1000;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '44': //zadany stosunek współczynnika paliwo-powietrze (0 do 2)
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) * (2 / 65536);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '45': //względny stopień otwarcia przepustnicy
       value = parseInt(hex[0], 16) / 2.55;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '46': //temperatura otoczenia
       value = parseInt(hex[0], 16) - 40;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '4D': //czas jaki upłynął od zapalenia kontrolki sygnalizującej usterki [min] (0 do 65535)
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '4E': //czas jaki upłynął od wyczyszczenia pamięci błędów [min]
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '51': //typ paliwa
       value = parseInt(hex[0], 16);
+      value = Math.round(value * 10) / 10;
       switch (value.toString) {
         case '1':
           return 'Gasoline';
@@ -132,33 +157,43 @@ export const responseConverter = (code, hex) => {
       }
     case '59': //ciśnienie absolutne szyny paliwa [kPa]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) * 10;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '5A': //względna pozycja pedału przyspieszenia [0-100%]
       value = parseInt(hex[0], 16) / 2.55;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '5C': //temperatura oleju [°C]
       value = parseInt(hex[0], 16) - 40;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '5D': //kąt wyprzedzenia wtrysku paliwa (od -210 do 301.992°)
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 128 - 210;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '5E': //spalanie silnika [L\h]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 20;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '61': //zadany moment obrotowy silnika [%]
       value = parseInt(hex[0], 16) - 125;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '62': //rzeczywisty moment obrotowy silnika [%]
       value = parseInt(hex[0], 16) - 125;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '63': //moment obrotowy silnika (względny) [Nm]
       value = 256 * parseInt(hex[0], 16) + parseInt(hex[1], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '7C': //temperatura DPF(Diesel Particulate filter) [°C]
       value = (256 * parseInt(hex[0], 16) + parseInt(hex[1], 16)) / 10 - 40;
+      value = Math.round(value * 10) / 10;
       return value.toString();
     case '7F': //czas pracy silnika [sec]
       value = parseInt(hex[0], 16);
+      value = Math.round(value * 10) / 10;
       return value.toString();
   }
 };

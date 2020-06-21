@@ -71,9 +71,14 @@ import {
   SET_DPF_TEMPERATURE_SELECTED,
   SET_ENGINE_RUN_TIME,
   SET_ENGINE_RUN_TIME_SELECTED,
+  SET_TROUBLE_CODES_QUANTITY,
+  SET_TROUBLE_CODES,
 } from '../actions/types';
 
 const initialState = {
+  troubleCodesQuantity: null,
+  troubleCodes: [],
+
   engineLoad: '',
   isEngineLoadSelected: false,
   coolantTemperature: '',
@@ -92,7 +97,6 @@ const initialState = {
   isIntakeAirTemperatureSelected: false,
   airFlowRate: '',
   isAirFlowRateSelected: false,
-
   throttlePosition: '',
   isThrottlePositionSelected: false,
   runTimeSinceEngineStart: '',
@@ -151,6 +155,17 @@ const initialState = {
 
 const paramReducer = (state = initialState, action) => {
   switch (action.type) {
+    case SET_TROUBLE_CODES_QUANTITY:
+      return {
+        ...state,
+        troubleCodesQuantity: action.data,
+      };
+    case SET_TROUBLE_CODES:
+      return {
+        ...state,
+        troubleCodes: action.data,
+      };
+
     case SET_ENGINE_LOAD:
       return {
         ...state,
