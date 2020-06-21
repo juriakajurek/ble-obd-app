@@ -1,77 +1,109 @@
 import React from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Linking, Alert} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import LottieView from 'lottie-react-native';
 
 import * as constants from '../../assets/constants';
 import MainLabel from '../components/MainLabel';
-import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
-import {setCodesShown} from '../actions/actions';
+import {
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native-gesture-handler';
+import {
+  setCodesShown,
+  setFuelRailAbsolutePressureSelected,
+} from '../actions/actions';
 
 const TroubleCodesScreen = ({navigation}, props) => {
+  const searchInGoogle = async query => {
+    let url = `https://www.google.com/search?hl=&site=&q=${query}`;
+    if (Linking.canOpenURL(url)) {
+      Linking.openURL(url);
+    } else {
+      console.lo(`Don't know how to open this URL: ${url}`);
+    }
+  };
+
   const btModule = useSelector(state => state.main.btModule);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
   const areCodesShown = useSelector(state => state.codes.areCodesShown);
 
+  const troubleCodesQuantity = useSelector(
+    state => state.main.troubleCodesQuantity
+  );
+  const troubleCodes = useSelector(state => state.main.troubleCodes);
+
   const dispatch = useDispatch();
 
-  const getTroubleCodes = async callback => {
-    await btModule.setupNotifications(selectedDevice, '03', tab => {
+  const getTroubleCodes = async () => {
+    await btModule.setupNotifications(selectedDevice, '03', val => {
+      let tab = val.split(' ');
+      console.log(tab);
+
       if (tab[0].toString().includes('ELM327')) {
         return '0';
       }
 
       let index = tab.findIndex(el => {
-        return el.toString() == '03';
+        return el.toString() == '43';
       });
+      console.log('index: ' + index);
 
       if (index != -1) {
-        let hex = [tab[index + 1].toString(), tab[index + 2].toString()];
+        let hex = [tab[index + 1].toString()];
+        alert('Znaleziono ' + tab[index + 1].toString() + ' kodów błędów');
 
-        tab.forEach(element => {
-          console.log(element);
-        });
+        let quantity = parseInt(tab[index + 1]);
 
-        // let value = responseConverter(code, hex);
-        // if (typeof callback !== 'function') {
-        //   callback = false;
-        // }
-        // if (callback) {
-        //   callback(value);
-        // }
-        // return value.toString();
+        dispatch(setTroubleCodesQuantity(quantity));
+
+        let codes = [];
+        for (i = 0; i < quantity; i++) {
+          hex.push(tab[index + 2 * i + 2].toString());
+          hex.push(tab[index + 2 * i + 3].toString());
+
+          codes.push(
+            tab[index + 2 * i + 2].toString() +
+              tab[index + 2 * i + 3].toString()
+          );
+        }
+
+        dispatch(setTroubleCodes(codes));
+
+        console.log('codes: ' + codes);
+        return codes;
       } else return '0';
     });
   };
 
   const clearTroubleCodes = async () => {
-    await btModule.setupNotifications(selectedDevice, '04', tab => {
+    await btModule.setupNotifications(selectedDevice, '04', val => {
       // if (tab[0].toString().includes('ELM327')) {
       //   return '0';
       // }
-
-      let index = tab.findIndex(el => {
-        return el.toString() == '04';
-      });
-
-      // if (index != -1) {
-      //   let hex = [tab[index + 1].toString(), tab[index + 2].toString()];
-
-      //   tab.forEach(element => {
-      //     console.log(element);
-      //   });
-
-      // let value = responseConverter(code, hex);
-      // if (typeof callback !== 'function') {
-      //   callback = false;
-      // }
-      // if (callback) {
-      //   callback(value);
-      // }
-      // return value.toString();
-      // } else return '0';
+      let tab = val.split(' ');
+      console.log(tab);
+      Alert.alert(
+        '',
+        'Polecenie wykasowania błędów zostało wysłane.',
+        [{text: 'OK', onPress: () => {}}],
+        {cancelable: true}
+      );
     });
   };
+
+  const keyExtractor = (item, index) => index.toString();
+  const renderItem = ({item}) => (
+    <MainLabel
+      style={styles.codeLabel}
+      iconName="search-web"
+      onPress={() => {
+        searchInGoogle(item.toString());
+      }}>
+      `P+${item.toString()}`
+    </MainLabel>
+  );
 
   return (
     <View style={styles.screen}>
@@ -93,27 +125,20 @@ const TroubleCodesScreen = ({navigation}, props) => {
               </View>
             ) : (
               <View style={styles.labelContainer}>
-                <ScrollView>
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 drfdfdsfsdfsdsd
-                  </MainLabel>
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 d
-                  </MainLabel>
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 drfdfdsfsdfsdsddrfdfdsfsdfsdsd
-                  </MainLabel>
-
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 d
-                  </MainLabel>
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 drfdfdsfsdfsdsddrfdfdsfsdfsdsd
-                  </MainLabel>
-                  <MainLabel style={styles.codeLabel} iconName="search-web">
-                    P0104 drfdfdsfsdfsdsd
-                  </MainLabel>
-                </ScrollView>
+                {troubleCodesQuantity > 0 ? (
+                  <FlatList
+                    style={styles.list}
+                    keyExtractor={keyExtractor}
+                    data={troubleCodes}
+                    renderItem={renderItem}
+                  />
+                ) : (
+                  <View style={styles.warnWindow}>
+                    <Text style={styles.warnText}>
+                      Nie znaleziono żadnych błędów.
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -215,6 +240,9 @@ const styles = StyleSheet.create({
   warnText: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  list: {
+    width: '100%',
   },
   link: {
     color: 'blue',

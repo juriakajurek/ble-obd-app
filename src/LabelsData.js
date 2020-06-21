@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import ParamLabel from './components/ParamLabel';
+import {responseConverter} from './responseConverter';
 
 import {useSelector, useDispatch} from 'react-redux';
 import {
@@ -74,37 +75,12 @@ import {
   setDpfTemperatureSelected,
   setEngineRunTime,
   setEngineRunTimeSelected,
+  setRunTimeSinceEngineStart,
 } from './actions/actions';
 
 const LabelsData = () => {
   const btModule = useSelector(state => state.main.btModule);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
-
-  const dispatch = useDispatch();
-
-  const getParam = async (code, callback) => {
-    await btModule.setupNotifications(selectedDevice, '01' + code, tab => {
-      if (tab[0].toString().includes('ELM327')) {
-        return '0';
-      }
-
-      let index = tab.findIndex(el => {
-        return el.toString() == code;
-      });
-
-      if (index != -1) {
-        let hex = [tab[index + 1].toString(), tab[index + 2].toString()];
-        let value = responseConverter(code, hex);
-        if (typeof callback !== 'function') {
-          callback = false;
-        }
-        if (callback) {
-          callback(value);
-        }
-        return value.toString();
-      } else return '0';
-    });
-  };
 
   const engineLoad = useSelector(state => state.params.engineLoad);
   const isEngineLoadSelected = useSelector(
@@ -285,6 +261,40 @@ const LabelsData = () => {
     state => state.params.isEngineRunTimeSelected
   );
 
+  const dispatch = useDispatch();
+
+  const getParam = async (code, callback) => {
+    await btModule.setupNotifications(selectedDevice, '01' + code, val => {
+      let tab = val.split(' ');
+
+      if (tab[0].toString().includes('ELM327')) {
+        return '0';
+      }
+
+      let index = tab.findIndex(el => {
+        return el.toString() == code;
+      });
+
+      if (index != -1) {
+        let hex;
+        if (tab[index + 2].toString()) {
+          hex = [tab[index + 1].toString(), tab[index + 2].toString()];
+        } else {
+          hex = [tab[index + 1].toString()];
+        }
+        let value = responseConverter(code, hex);
+        if (typeof callback !== 'function') {
+          callback = false;
+        }
+        if (callback) {
+          callback(value);
+        }
+        console.log('value: ' + value.toString());
+        return value.toString();
+      } else return '0';
+    });
+  };
+
   const isSelected = [
     isEngineLoadSelected,
     isCoolantTemperatureSelected,
@@ -343,7 +353,7 @@ const LabelsData = () => {
     'Błąd EGR (różnica pomiędzy wartością zadaną a rzeczywistą zaworu EGR) [%]',
     'Poziom paliwa [%]',
     'Liczba uruchomień silnika od czasu wykasowania pamięci błędów',
-    'Dystans przejechany od czasu wykasowania pamięci błędów',
+    'Dystans przejechany od czasu wykasowania pamięci błędów [km]',
     'Napięcie modułu sterującego [V]',
     'Zadany stosunek współczynnika paliwo-powietrze',
     'Względny stopień otwarcia przepustnicy [%]',
@@ -405,7 +415,6 @@ const LabelsData = () => {
   const onPress = [
     () => {
       getParam('04', value => {
-        console.log('ASFASDGSDFGVRTGHVDFTGVHXFDVSD');
         dispatch(setEngineLoad(value));
       });
     },
@@ -421,7 +430,7 @@ const LabelsData = () => {
     },
     () => {
       getParam('0B', value => {
-        dispatch(setIntakeManifoldPressure(value));
+        if (value != '1') dispatch(setIntakeManifoldPressure(value));
       });
     },
     () => {
@@ -752,7 +761,7 @@ const LabelsData = () => {
       key: i,
       isSelected: isSelected[i],
       title: title[i],
-      val: val[i],
+      value: val[i],
       onPress: onPress[i],
       onLongPress: onLongPress[i],
     };
