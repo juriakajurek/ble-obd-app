@@ -12,29 +12,28 @@ import {
 } from 'react-native-gesture-handler';
 import {
   setCodesShown,
-  setFuelRailAbsolutePressureSelected,
+  setTroubleCodesQuantity,
+  setTroubleCodes,
 } from '../actions/actions';
 
 const TroubleCodesScreen = ({navigation}, props) => {
+  const btModule = useSelector(state => state.main.btModule);
+  const selectedDevice = useSelector(state => state.main.selectedDevice);
+  const areCodesShown = useSelector(state => state.codes.areCodesShown);
+  const troubleCodesQuantity = useSelector(
+    state => state.codes.troubleCodesQuantity
+  );
+  const troubleCodes = useSelector(state => state.codes.troubleCodes);
+  const dispatch = useDispatch();
+
   const searchInGoogle = async query => {
     let url = `https://www.google.com/search?hl=&site=&q=${query}`;
     if (Linking.canOpenURL(url)) {
       Linking.openURL(url);
     } else {
-      console.lo(`Don't know how to open this URL: ${url}`);
+      console.log(`Don't know how to open this URL: ${url}`);
     }
   };
-
-  const btModule = useSelector(state => state.main.btModule);
-  const selectedDevice = useSelector(state => state.main.selectedDevice);
-  const areCodesShown = useSelector(state => state.codes.areCodesShown);
-
-  const troubleCodesQuantity = useSelector(
-    state => state.main.troubleCodesQuantity
-  );
-  const troubleCodes = useSelector(state => state.main.troubleCodes);
-
-  const dispatch = useDispatch();
 
   const getTroubleCodes = async () => {
     await btModule.setupNotifications(selectedDevice, '03', val => {
@@ -60,12 +59,12 @@ const TroubleCodesScreen = ({navigation}, props) => {
 
         let codes = [];
         for (i = 0; i < quantity; i++) {
+          hex.push(tab[index + 2 * i + 1].toString());
           hex.push(tab[index + 2 * i + 2].toString());
-          hex.push(tab[index + 2 * i + 3].toString());
 
           codes.push(
-            tab[index + 2 * i + 2].toString() +
-              tab[index + 2 * i + 3].toString()
+            tab[index + 2 * i + 1].toString() +
+              tab[index + 2 * i + 2].toString()
           );
         }
 
@@ -222,10 +221,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   firstLabel: {
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 15,
   },
   lastLabel: {
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 15,
   },
   warnWindow: {
     padding: '5%',

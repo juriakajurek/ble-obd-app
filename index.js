@@ -26,7 +26,7 @@ const database = new Database({
   // inicjalizacja bazy danych
   adapter,
   modelClasses: [Route],
-  actionsEnabled: true,
+  actionsEnabled: false,
 });
 
 const store = configureStore();

@@ -7,7 +7,7 @@ export const mySchema = appSchema({
     tableSchema({
       name: 'routes',
       columns: [
-        {name: 'pointId', type: 'number'}, //typy: string || number || boolean
+        {name: 'paramsData', type: 'string'}, //typy: string || number || boolean
         {name: 'geo', type: 'string'},
         {name: 'acc', type: 'number'},
         {name: 'speed', type: 'number'},

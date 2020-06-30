@@ -4,7 +4,7 @@ import {field, date} from '@nozbe/watermelondb/decorators';
 export default class Route extends Model {
   static table = 'routes';
 
-  @field('pointId') pointId;
+  @field('paramsData') paramsData;
   @field('geo') geo;
   @field('acc') acc;
   @field('speed') speed;

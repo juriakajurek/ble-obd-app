@@ -2,6 +2,7 @@ import React from 'react';
 import {TouchableNativeFeedback, Text, View, StyleSheet} from 'react-native';
 
 const ParamLabel = props => {
+  ////////?!!!!!!!!!!!    UNUSED
   return (
     <TouchableNativeFeedback
       onPress={props.onPress}
@@ -36,9 +37,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   selected: {
-    backgroundColor: '#ebebeb',
-    borderWidth: 1,
-    borderColor: 'black',
+    backgroundColor: 'red',
   },
   param: {
     width: '70%',
@@ -50,7 +49,6 @@ const styles = StyleSheet.create({
     width: '30%',
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'right',
   },
 });
 

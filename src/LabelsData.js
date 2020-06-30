@@ -277,7 +277,7 @@ const LabelsData = () => {
 
       if (index != -1) {
         let hex;
-        if (tab[index + 2].toString()) {
+        if (tab[index + 2]) {
           hex = [tab[index + 1].toString(), tab[index + 2].toString()];
         } else {
           hex = [tab[index + 1].toString()];

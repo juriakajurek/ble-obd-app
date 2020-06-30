@@ -1,5 +1,12 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, View, Image, Text, ImageBackground} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Image,
+  Text,
+  ImageBackground,
+  StatusBar,
+} from 'react-native';
 
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -15,6 +22,8 @@ function MainScreen({navigation}) {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    StatusBar.setHidden(true);
+
     if (selectedDevice && selectedDevice.name !== undefined) {
       dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));
     } else {
@@ -117,10 +126,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   firstLabel: {
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 15,
   },
   lastLabel: {
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 15,
   },
 });
 

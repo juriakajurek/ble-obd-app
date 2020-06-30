@@ -38,15 +38,23 @@ const ParamsScreen = ({navigation}) => {
               Wybierz parametr aby odczytać jego aktualną wartość.
             </Text>
             <Text style={styles.headerDescription}>
-              Przytrzymaj aby zaznaczyć wiele.
+              Przytrzymaj aby zaznaczyć.
             </Text>
           </View>
-          <FlatList
-            style={styles.list}
-            keyExtractor={keyExtractor}
-            data={labelObjectsList}
-            renderItem={renderItem}
-          />
+          <View style={styles.list}>
+            <ParamLabel
+              style={styles.legend}
+              key={'listLegend'}
+              title={'Parametr'}
+              value={'Wartość'}
+              onPress={() => {}}
+            />
+            <FlatList
+              keyExtractor={keyExtractor}
+              data={labelObjectsList}
+              renderItem={renderItem}
+            />
+          </View>
         </View>
       ) : (
         <TouchableOpacity
@@ -86,8 +94,21 @@ const styles = StyleSheet.create({
   headerDescription: {
     textAlign: 'center',
   },
+  legend: {
+    backgroundColor: 'lightgray',
+    opacity: 0.5,
+  },
   list: {
-    width: '100%',
+    borderWidth: 1,
+    borderColor: 'lightgray',
+    borderRadius: 5,
+    flex: 5,
+    paddingBottom: 8,
+    margin: 10,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
   },
   warnWindow: {
     padding: '5%',
