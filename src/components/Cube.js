@@ -1,34 +1,30 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {StyleSheet, View, PanResponder} from 'react-native';
+import {StyleSheet, View, PanResponder, Button} from 'react-native';
+import {useSelector, useDispatch} from 'react-redux';
 
 import MatrixMath from 'react-native/Libraries/Utilities/MatrixMath';
+import {setDy, setDx} from '../actions/actions';
+// import {Easing} from 'react-native-reanimated';
+const CUBE_SIZE = 74;
 
 const Cube = props => {
-  const [dx, setDx] = useState(1);
-  const [dy, setDy] = useState(1);
-  const [rolling, setRolling] = useState(false);
+  const dx = useSelector(state => state.box.dx);
+  const dy = useSelector(state => state.box.dy);
+  const isTraveling = useSelector(state => state.box.isTraveling);
+  const dispatch = useDispatch;
 
   useEffect(() => {
-    if (!rolling) {
-      if (props.isTravelling) {
-        this._interval = setInterval(() => {
-          setDx(dx => dx + 2);
-          setDy(dy => dy + 2);
-          roll();
-        }, 10);
-        setRolling(true);
-      }
-    } else {
-      if (!props.isTravelling) {
-        clearInterval(this._interval);
-        setRolling(false);
-      }
-    }
+    // if (isTraveling) {
+    //   wink();
+    // } else {
+    //   Animated.timing(scale).stop();
+    //   scale.setValue(1);
+    // }
+    roll();
   });
 
   const roll = () => {
-    const origin = {x: 0, y: 0, z: -49};
-
+    const origin = {x: 0, y: 0, z: -CUBE_SIZE};
     let matrix = rotateXY(dx, dy);
     transformOrigin(matrix, origin);
     refViewFront.setNativeProps({
@@ -124,6 +120,30 @@ const Cube = props => {
     ];
   };
 
+  // let rotZ = useRef(new Animated.Value(0)).current;
+  // let scale = useRef(new Animated.Value(1)).current;
+  // const spin = rotZ.interpolate({
+  //   inputRange: [0, 1],
+  //   outputRange: ['0deg', '360deg'],
+  // });
+
+  // const wink = () => {
+  //   Animated.loop(
+  //     Animated.sequence([
+  //       Animated.timing(scale, {
+  //         toValue: 1.1,
+  //         duration: 1500,
+  //         useNativeDriver: false,
+  //       }),
+  //       Animated.timing(scale, {
+  //         toValue: 1,
+  //         duration: 1500,
+  //         useNativeDriver: false,
+  //       }),
+  //     ])
+  //   ).start();
+  // };
+
   const transformOrigin = (matrix, origin) => {
     const {x, y, z} = origin;
 
@@ -144,7 +164,7 @@ const Cube = props => {
         console.log(gestureState);
 
         const {dx, dy} = gestureState;
-        const origin = {x: 0, y: 0, z: -49};
+        const origin = {x: 0, y: 0, z: -CUBE_SIZE};
         let matrix = rotateXY(dx, dy);
         transformOrigin(matrix, origin);
         refViewFront.setNativeProps({
@@ -253,40 +273,37 @@ const Cube = props => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* {renderFront()')}
-        {renderBack()}
-        {renderLeft()}
-        {renderRight()}
-        {renderTop()}
-        {renderBottom()} */}
-
-      {renderFront('rgba(0,0,0,0.8)')}
-      {renderBack('rgba(0,0,0,0.8)')}
-      {renderLeft('rgba(0,0,0,0.8)')}
-      {renderRight('rgba(0,0,0,0.8)')}
-      {renderTop('rgba(0,0,0,0.8)')}
-      {renderBottom('rgba(0,0,0,0.8)')}
+    <View>
+      <View
+        style={[
+          styles.container,
+          // {
+          //   transform: [{scale: scale}],
+          // },
+        ]}>
+        {renderFront('rgba(0,0,0,0.8)')}
+        {renderBack('rgba(0,0,0,0.8)')}
+        {renderLeft('rgba(0,0,0,0.8)')}
+        {renderRight('rgba(0,0,0,0.8)')}
+        {renderTop('rgba(0,0,0,0.8)')}
+        {renderBottom('rgba(0,0,0,0.8)')}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: 100,
-    height: 100,
-    marginTop: 100,
+    width: 2 * CUBE_SIZE,
+    height: 2 * CUBE_SIZE,
     backgroundColor: 'transparent',
-  },
-  white: {
-    color: 'white',
   },
   rectangle: {
     position: 'absolute',
     left: 0,
     top: 0,
-    width: 94,
-    height: 94,
+    width: 1.9 * CUBE_SIZE,
+    height: 1.9 * CUBE_SIZE,
     zIndex: 100,
     borderRadius: 15,
   },

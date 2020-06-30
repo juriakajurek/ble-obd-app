@@ -72,10 +72,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   firstLabel: {
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 15,
   },
   lastLabel: {
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 15,
   },
 });
 

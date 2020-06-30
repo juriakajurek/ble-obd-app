@@ -27,10 +27,10 @@ import {
 
 async function requestLocationPermission() {
   try {
-    const granted = await PermissionsAndroid.request(
+    let granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
       {
-        title: 'ObdApp Location Permission',
+        title: '',
         message: 'ObdApp needs access to your Location ',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
@@ -38,10 +38,10 @@ async function requestLocationPermission() {
       }
     ).then(
       await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        (granted = PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION),
         {
-          title: 'ObdApp Location Permission',
-          message: 'ObdApp needs access to your camera ',
+          title: '',
+          message: 'ObdApp needs access to your Location ',
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
