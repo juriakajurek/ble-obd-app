@@ -1,4 +1,8 @@
 import {
+  SET_TIMER1,
+  SET_TIMER2,
+  SET_TIMER3,
+  SET_TIMER4,
   SET_ENGINE_LOAD,
   SET_ENGINE_LOAD_SELECTED,
   SET_COOLANT_TEMPERATURE,
@@ -74,6 +78,10 @@ import {
 } from '../actions/types';
 
 const initialState = {
+  timer1: {id: {}, index: -1},
+  timer2: {id: {}, index: -1},
+  timer3: {id: {}, index: -1},
+  timer4: {id: {}, index: -1},
   engineLoad: '',
   isEngineLoadSelected: false,
   coolantTemperature: '',
@@ -150,11 +158,32 @@ const initialState = {
 
 const paramReducer = (state = initialState, action) => {
   switch (action.type) {
+    case SET_TIMER1:
+      return {
+        ...state,
+        timer1: action.data,
+      };
+    case SET_TIMER2:
+      return {
+        ...state,
+        timer2: action.data,
+      };
+    case SET_TIMER3:
+      return {
+        ...state,
+        timer3: action.data,
+      };
+    case SET_TIMER4:
+      return {
+        ...state,
+        timer4: action.data,
+      };
     case SET_ENGINE_LOAD:
       return {
         ...state,
         engineLoad: action.data,
       };
+
     case SET_ENGINE_LOAD_SELECTED:
       return {
         ...state,

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -16,6 +16,17 @@ const ParamsScreen = ({navigation}) => {
   const selectedDevice = useSelector(state => state.main.selectedDevice);
 
   let labelObjectsList = LabelsData();
+  // let [waiting, setWaiting] = useState(false);
+
+  // useEffect(() => {
+
+  //   labelObjectsList.forEach(element => {
+  //     if (element.isSelected) {
+  //       element.onPress();
+  //     }
+  //   });
+  //   wait(5000);
+  // });
 
   const keyExtractor = (item, index) => index.toString();
   const renderItem = ({item}) => (
@@ -105,6 +116,7 @@ const styles = StyleSheet.create({
     flex: 5,
     paddingBottom: 8,
     margin: 10,
+    marginBottom: 20,
     alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',

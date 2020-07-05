@@ -23,6 +23,7 @@ function MainScreen({navigation}) {
 
   useEffect(() => {
     StatusBar.setHidden(true);
+    console.disableYellowBox = true;
 
     if (selectedDevice && selectedDevice.name !== undefined) {
       dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));

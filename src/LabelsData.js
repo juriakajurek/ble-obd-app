@@ -5,6 +5,10 @@ import {responseConverter} from './responseConverter';
 
 import {useSelector, useDispatch} from 'react-redux';
 import {
+  setTimer1,
+  setTimer2,
+  setTimer3,
+  setTimer4,
   setRpm,
   setRpmSelected,
   setEngineLoad,
@@ -76,12 +80,117 @@ import {
   setEngineRunTime,
   setEngineRunTimeSelected,
   setRunTimeSinceEngineStart,
+  setRunTimeSinceEngineStartSelected,
 } from './actions/actions';
 
 const LabelsData = () => {
+  const checkTimer = i => {
+    if (
+      timer1.index == -1 ||
+      timer2.index == -1 ||
+      timer3.index == -1 ||
+      timer4.index == -1
+    ) {
+      if (
+        //jesli element nie jest w zadnym timerze
+        i != timer1.index ||
+        i != timer2.index ||
+        i != timer3.index ||
+        i != timer4.index
+      ) {
+        let timer = findFreeTimer();
+
+        switch (timer) {
+          case 1: {
+            dispatch(
+              setTimer1({
+                id: setInterval(() => {
+                  console.log('CHCIAŁBYM POBRAĆ DANE.1..');
+                  onPress[i]();
+                }, 4000),
+                index: i,
+              })
+            );
+            break;
+          }
+          case 2: {
+            dispatch(
+              setTimer2({
+                id: setInterval(() => {
+                  console.log('CHCIAŁBYM POBRAĆ DANE.2..');
+                  onPress[i]();
+                }, 4000),
+                index: i,
+              })
+            );
+            break;
+          }
+          case 3: {
+            dispatch(
+              setTimer3({
+                id: setInterval(() => {
+                  console.log('CHCIAŁBYM POBRAĆ DANE.3..');
+                  onPress[i]();
+                }, 4000),
+                index: i,
+              })
+            );
+            break;
+          }
+          case 4: {
+            dispatch(
+              setTimer4({
+                id: setInterval(() => {
+                  console.log('CHCIAŁBYM POBRAĆ DANE.4..');
+                  onPress[i]();
+                }, 4000),
+                index: i,
+              })
+            );
+            break;
+          }
+          case -1:
+            console.log('Brak wolnego timera');
+          default:
+        }
+      }
+    }
+  };
+
+  const removeTimer = index => {
+    switch (index) {
+      case timer1.index: {
+        clearInterval(timer1.id);
+        dispatch(setTimer1({id: {}, index: -1}));
+        break;
+      }
+      case timer2.index: {
+        clearInterval(timer2.id);
+        dispatch(setTimer2({id: {}, index: -1}));
+        break;
+      }
+      case timer3.index: {
+        clearInterval(timer3.id);
+        dispatch(setTimer3({id: {}, index: -1}));
+        break;
+      }
+      case timer4.index: {
+        clearInterval(timer4.id);
+        dispatch(setTimer4({id: {}, index: -1}));
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   const btModule = useSelector(state => state.main.btModule);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
 
+  const timer1 = useSelector(state => state.params.timer1);
+  const timer2 = useSelector(state => state.params.timer2);
+  const timer3 = useSelector(state => state.params.timer3);
+  const timer4 = useSelector(state => state.params.timer4);
   const engineLoad = useSelector(state => state.params.engineLoad);
   const isEngineLoadSelected = useSelector(
     state => state.params.isEngineLoadSelected
@@ -263,6 +372,14 @@ const LabelsData = () => {
 
   const dispatch = useDispatch();
 
+  const findFreeTimer = () => {
+    if (timer1.index == -1) return 1;
+    if (timer2.index == -1) return 2;
+    if (timer3.index == -1) return 3;
+    if (timer4.index == -1) return 4;
+    return -1;
+  };
+
   const getParam = async (code, callback) => {
     await btModule.setupNotifications(selectedDevice, '01' + code, val => {
       let tab = val.split(' ');
@@ -345,7 +462,7 @@ const LabelsData = () => {
     'Temperatura pobieranego powietrza [°C]',
     'Przepływ powietrza [g/s]',
     'Pozycja przepustnicy [%]',
-    'Czas, który upłynął od uruchomienia silnika [s]',
+    'Czas który upłynął od uruchomienia silnika [s]',
     'Dystans przejechany od zapalenia kontrolki sygnalizującej usterki [km]',
     'Ciśnienie w szynie paliwa (w stosunku do ciśnienia w kolektorze dolotowym) [kPa]',
     'Ciśnienie w szynie paliwa (z czujnika ciśnienia) [kPa]',
@@ -358,8 +475,8 @@ const LabelsData = () => {
     'Zadany stosunek współczynnika paliwo-powietrze',
     'Względny stopień otwarcia przepustnicy [%]',
     'Temperatura otoczenia [°C]',
-    'Czas, jaki upłynął od zapalenia kontrolki sygnalizującej usterki [min]',
-    'Czas, jaki upłynął od wyczyszczenia pamięci błędów [min]',
+    'Czas jaki upłynął od zapalenia kontrolki sygnalizującej usterki [min]',
+    'Czas jaki upłynął od wyczyszczenia pamięci błędów [min]',
     'Typ paliwa',
     'Ciśnienie absolutne szyny paliwa [kPa]',
     'Względna pozycja pedału przyspieszenia [%]',
@@ -416,6 +533,7 @@ const LabelsData = () => {
     () => {
       getParam('04', value => {
         dispatch(setEngineLoad(value));
+        console.log('setted engine load ' + value);
       });
     },
     () => {
@@ -597,32 +715,92 @@ const LabelsData = () => {
 
   const onLongPress = [
     () => {
-      dispatch(setEngineLoadSelected(!isEngineLoadSelected));
+      if (isEngineLoadSelected) {
+        dispatch(setEngineLoadSelected(false));
+        removeTimer(0);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEngineLoadSelected(true));
+          checkTimer(0);
+        }
+      }
     },
     () => {
-      dispatch(setCoolantTemperatureSelected(!isCoolantTemperatureSelected));
+      if (isCoolantTemperatureSelected) {
+        dispatch(setCoolantTemperatureSelected(false));
+        removeTimer(1);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setCoolantTemperatureSelected(true));
+          checkTimer(1);
+        }
+      }
     },
     () => {
-      dispatch(setFuelPressureSelected(!isFuelPressureSelected));
+      if (isFuelPressureSelected) {
+        dispatch(setFuelPressureSelected(false));
+        removeTimer(2);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelPressureSelected(true));
+          checkTimer(2);
+        }
+      }
     },
     () => {
-      dispatch(
-        setIntakeManifoldPressureSelected(!isIntakeManifoldPressureSelected)
-      );
+      if (isIntakeManifoldPressureSelected) {
+        dispatch(setIntakeManifoldPressureSelected(false));
+        removeTimer(3);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setIntakeManifoldPressureSelected(true));
+          checkTimer(3);
+        }
+      }
     },
     () => {
-      dispatch(setRpmSelected(!isRpmSelected));
+      if (isRpmSelected) {
+        dispatch(setRpmSelected(false));
+        removeTimer(4);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setRpmSelected(true));
+          checkTimer(4);
+        }
+      }
     },
     () => {
-      dispatch(setSpeedSelected(!isSpeedSelected));
+      if (isSpeedSelected) {
+        dispatch(setSpeedSelected(false));
+        removeTimer(5);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setSpeedSelected(true));
+          checkTimer(5);
+        }
+      }
     },
     () => {
-      dispatch(setTimingAdvanceSelected(!isTimingAdvanceSelected));
+      if (isTimingAdvanceSelected) {
+        dispatch(setTimingAdvanceSelected(false));
+        removeTimer(6);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setTimingAdvanceSelected(true));
+          checkTimer(6);
+        }
+      }
     },
     () => {
-      dispatch(
-        setIntakeAirTemperatureSelected(!isIntakeAirTemperatureSelected)
-      );
+      if (isIntakeAirTemperatureSelected) {
+        dispatch(setIntakeAirTemperatureSelected(false));
+        removeTimer(7);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setIntakeAirTemperatureSelected(true));
+          checkTimer(7);
+        }
+      }
     },
     () => {
       dispatch(setAirFlowRateSelected(!isAirFlowRateSelected));
@@ -753,6 +931,23 @@ const LabelsData = () => {
       dispatch(setEngineRunTimeSelected(!isEngineRunTimeSelected));
     },
   ];
+
+  const getData = () => {
+    let arr = [];
+
+    for (i = 0; i < isSelected.length; i++) {
+      let newObj = {
+        key: i,
+        isSelected: isSelected[i],
+        title: title[i],
+        value: val[i],
+        onPress: onPress[i],
+        onLongPress: onLongPress[i],
+      };
+      arr.push(newObj);
+    }
+    return arr;
+  };
 
   let arr = [];
 

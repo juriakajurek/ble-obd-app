@@ -1,3 +1,7 @@
+export const SET_TIMER1 = 'SET_TIMER1';
+export const SET_TIMER2 = 'SET_TIMER2';
+export const SET_TIMER3 = 'SET_TIMER3';
+export const SET_TIMER4 = 'SET_TIMER4';
 export const SET_BT_MODULE = 'SET_BTMODULE';
 export const ADD_DEVICE = 'ADD_DEVICE';
 export const ADD_DEVICE_TO_LIST = 'ADD_DEVICE_TO_LIST';

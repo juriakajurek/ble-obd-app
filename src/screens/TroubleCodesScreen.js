@@ -83,12 +83,6 @@ const TroubleCodesScreen = ({navigation}, props) => {
       // }
       let tab = val.split(' ');
       console.log(tab);
-      Alert.alert(
-        '',
-        'Polecenie wykasowania błędów zostało wysłane.',
-        [{text: 'OK', onPress: () => {}}],
-        {cancelable: true}
-      );
     });
   };
 
@@ -98,9 +92,9 @@ const TroubleCodesScreen = ({navigation}, props) => {
       style={styles.codeLabel}
       iconName="search-web"
       onPress={() => {
-        searchInGoogle(item.toString());
+        searchInGoogle('fault code P' + item.toString());
       }}>
-      `P+${item.toString()}`
+      {'P' + item.toString()}
     </MainLabel>
   );
 
@@ -160,7 +154,14 @@ const TroubleCodesScreen = ({navigation}, props) => {
               style={styles.lastLabel}
               iconName="trash-can"
               onPress={() => {
-                clearTroubleCodes();
+                clearTroubleCodes().then(() => {
+                  Alert.alert(
+                    '',
+                    'Polecenie wykasowania błędów zostało wysłane.',
+                    [{text: 'OK', onPress: () => {}}],
+                    {cancelable: true}
+                  );
+                });
               }}>
               Kasuj błędy
             </MainLabel>
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   list: {
-    width: '100%',
+    width: '90%',
   },
   link: {
     color: 'blue',

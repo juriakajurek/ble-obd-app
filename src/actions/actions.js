@@ -1,4 +1,8 @@
 import {
+  SET_TIMER1,
+  SET_TIMER2,
+  SET_TIMER3,
+  SET_TIMER4,
   SET_BT_MODULE,
   SET_BT_SEARCHING,
   ADD_DEVICE,
@@ -91,6 +95,22 @@ import {
   SET_TIME_INTERVAL,
 } from './types';
 
+export const setTimer1 = timer1 => ({
+  type: SET_TIMER1,
+  data: timer1,
+});
+export const setTimer2 = timer2 => ({
+  type: SET_TIMER2,
+  data: timer2,
+});
+export const setTimer3 = timer3 => ({
+  type: SET_TIMER3,
+  data: timer3,
+});
+export const setTimer4 = timer4 => ({
+  type: SET_TIMER4,
+  data: timer4,
+});
 export const setBtModule = mod => ({
   type: SET_BT_MODULE,
   data: mod,

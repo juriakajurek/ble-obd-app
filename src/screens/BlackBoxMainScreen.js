@@ -35,6 +35,9 @@ import {Easing} from 'react-native-reanimated';
 import ParamLabel from '../components/ParamLabel';
 import LabelsData from '../LabelsData';
 
+import MapView from 'react-native-maps';
+import {Marker, Callout} from 'react-native-maps';
+
 function BlackBoxMainScreen({database}) {
   const routesCollection = database.collections.get('routes');
   // const allRoutes = getAllRoutes(routesCollection);
@@ -43,10 +46,75 @@ function BlackBoxMainScreen({database}) {
   let [isDataShown, setDataShown] = useState(false);
   let [isListShown, setListShown] = useState(false);
   let [list, setList] = useState('');
+  let [isMapShown, setMapShown] = useState(false);
 
-  let selectedParamsList = LabelsData().filter(param => {
-    return param.isSelected;
-  });
+  const rpm = useSelector(state => state.params.rpm);
+
+  let data = LabelsData();
+
+  function getData() {
+    let selectedData = data.filter(param => {
+      return param.isSelected;
+    });
+    console.log(selectedData[0].value); //<tu sie wartosc zmienia...
+
+    return selectedData;
+  }
+
+  // function getrpm() {
+  //   return rpm;
+  // }
+
+  const getParamData = async () => {
+    return getData()
+      .map(element => {
+        return element.title + ': ' + element.value;
+      })
+      .join();
+  };
+
+  const addd = async () => {
+    getParamData().then(d => console.log(d)); //<a tu jakby freezen frame czy coś
+    await getParamData()
+      .then(data => {
+        Geolocation.getCurrentPosition(
+          info => {
+            addPointToDb({
+              paramsData: data,
+
+              geo: `${info.coords.latitude}:${info.coords.longitude}`,
+              acc: info.coords.accuracy,
+              speed: info.coords.speed,
+              date: moment(),
+              route:
+                Array.isArray(pointsArray) && pointsArray.length
+                  ? parseInt(pointsArray[pointsArray.length - 1].route) + 1
+                  : 1,
+            });
+
+            console.log(
+              'Point added: ' +
+                info.coords.latitude +
+                ', ' +
+                info.coords.longitude,
+              data
+            );
+          },
+          error => {
+            console.log('Point cannot be added; ' + error.message);
+          },
+          {
+            timeout: timeInterval,
+            maximumAge: timeInterval,
+            enableHighAccuracy: true,
+          }
+        );
+      })
+      .then(() => {
+        dispatch(setDbIntervalId(null));
+      });
+    // setTimeout(addd, 6000);
+  };
 
   let pointsArray = [];
   for (const element of routesMap) {
@@ -118,47 +186,7 @@ function BlackBoxMainScreen({database}) {
         );
       }
       if (!dbIntervalId) {
-        dispatch(
-          setDbIntervalId(
-            setInterval(() => {
-              Geolocation.getCurrentPosition(
-                info => {
-                  addPointToDb({
-                    paramsData: selectedParamsList
-                      .map(element => {
-                        return element.title + ':' + element.value;
-                      })
-                      .toString(),
-                    geo: `${info.coords.latitude}:${info.coords.longitude}`,
-                    acc: info.coords.accuracy,
-                    speed: info.coords.speed,
-                    date: moment(),
-                    route:
-                      Array.isArray(pointsArray) && pointsArray.length
-                        ? parseInt(pointsArray[pointsArray.length - 1].route) +
-                          1
-                        : 1,
-                  });
-
-                  console.log(
-                    'Point added: ' +
-                      info.coords.latitude +
-                      ', ' +
-                      info.coords.longitude
-                  );
-                },
-                error => {
-                  console.log('Point cannot be added; ' + error.message);
-                },
-                {
-                  timeout: timeInterval,
-                  maximumAge: timeInterval,
-                  enableHighAccuracy: true,
-                }
-              );
-            }, timeInterval)
-          )
-        );
+        dispatch(setDbIntervalId(setTimeout(addd, timeInterval)));
       }
     } else {
       if (isDataShown) {
@@ -250,8 +278,12 @@ function BlackBoxMainScreen({database}) {
               },
             },
             {
-              text: 'Otwórz w mapach Google',
-              onPress: () => console.log('Ask me later pressed'),
+              text: 'Pokaż na mapie',
+              onPress: () => {
+                setList(item.route);
+
+                setMapShown(true);
+              },
             },
 
             {
@@ -290,41 +322,7 @@ function BlackBoxMainScreen({database}) {
                 let entriesArray = Object.entries(item);
                 Alert.alert(
                   'Zapisane dane ',
-                  entriesArray
-                    .map(el => {
-                      console.log(el);
-                      switch (el[0].toString()) {
-                        case 'acc':
-                          return (
-                            'Dokładność lokalizacji: ' +
-                            Math.round(parseFloat(el[1]) * 100) / 100
-                          );
-                        case 'date':
-                          return (
-                            'Data: ' +
-                            moment(el[1]).format('D.MM.YYYY, kk:mm:ss')
-                          );
-                        case 'geo':
-                          return 'Położenie geograficzne: ' + el[1];
-                        case 'id':
-                          return 'ID punktu: ' + el[1];
-                        case 'paramsData':
-                          return (
-                            'Zapisane parametry: ' +
-                            el[1].split(',').map(el => {
-                              return '\n' + el;
-                            })
-                          );
-                        case 'route':
-                          return 'Nr trasy: ' + el[1];
-                        case 'speed':
-                          return 'Prędkość: ' + el[1];
-                        default:
-                          return;
-                      }
-                    })
-                    .join('\n')
-                    .toString(),
+                  createDescription(entriesArray),
                   [
                     {
                       text: 'Powrót',
@@ -341,7 +339,6 @@ function BlackBoxMainScreen({database}) {
                 let pointToDelete = item.id;
                 deletePoint(pointToDelete);
               },
-
               style: 'cancel',
             },
           ],
@@ -353,7 +350,7 @@ function BlackBoxMainScreen({database}) {
 
   let PointsList = props => {
     return (
-      <View style={styles.list}>
+      <View style={styles.listContainer}>
         <ParamLabel
           style={styles.legend}
           key={'listLegend'}
@@ -376,7 +373,7 @@ function BlackBoxMainScreen({database}) {
 
   let RoutesList = () => {
     return (
-      <View style={styles.list}>
+      <View style={styles.listContainer}>
         <ParamLabel
           style={styles.legend}
           key={'listLegend'}
@@ -389,6 +386,124 @@ function BlackBoxMainScreen({database}) {
           data={getRoutes()}
           renderItem={renderItem}
         />
+      </View>
+    );
+  };
+
+  const createDescription = entriesArray => {
+    let description = '';
+    let i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('date');
+    });
+    if (i != -1 && entriesArray[i][1]) {
+      description +=
+        '• Data: ' + moment(entriesArray[i][1]).format('D.MM.YYYY') + '\n';
+    }
+    i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('route');
+    });
+    if (i != -1 && entriesArray[i][1]) {
+      description += '• Nr trasy: ' + entriesArray[i][1] + '\n';
+    }
+    i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('geo');
+    });
+    if (i != -1 && entriesArray[i][1]) {
+      description +=
+        '• Współrzędne gps: ' + entriesArray[i][1].split(':').join(', ') + '\n';
+    }
+    i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('acc');
+    });
+    if (i != -1 && entriesArray[i][1]) {
+      description +=
+        '• Dokładność gps: ' +
+        Math.round(parseFloat(entriesArray[i][1] * 100) / 100) +
+        'm\n';
+    }
+    i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('speed');
+    });
+    if ((i != -1 && entriesArray[i][1]) || entriesArray[i][1] === 0) {
+      description += '• Prędkość gps: ' + entriesArray[i][1] + '\n';
+    }
+    i = entriesArray.findIndex(element => {
+      return element[0].toString().includes('paramsData');
+    });
+    if (i != -1 && entriesArray[i][1]) {
+      description +=
+        '• Zapisane parametry: ' +
+        entriesArray[i][1].split(',').map(el => {
+          return '\n  ' + el;
+        }) +
+        '\n';
+    }
+    return description;
+  };
+
+  let MapOfPoints = () => {
+    const waypoints = pointsArray.filter(point => {
+      return point.route === parseInt(list);
+    });
+    return (
+      <View style={styles.listContainer}>
+        <ParamLabel
+          style={styles.legend}
+          key={'listLegend'}
+          value={''}
+          title={'<  Powrót'}
+          onPress={() => {
+            setMapShown(false);
+            setList('routes');
+          }}
+        />
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.mapView}
+            initialCamera={{
+              center: {
+                latitude: parseFloat(waypoints[0].geo.split(':')[0]),
+                longitude: parseFloat(waypoints[0].geo.split(':')[1]),
+              },
+              pitch: 0,
+              heading: 0,
+              altitude: 1,
+              zoom: 13,
+            }}>
+            {waypoints.map((point, index) => {
+              let entriesArray = Object.entries(point);
+
+              let description = createDescription(entriesArray);
+
+              return (
+                <Marker
+                  key={index}
+                  coordinate={{
+                    latitude: parseFloat(point.geo.split(':')[0]),
+                    longitude: parseFloat(point.geo.split(':')[1]),
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}>
+                  <View style={styles.customMarker} />
+                  <Callout onPress={() => {}} style={styles.customCallout}>
+                    <View>
+                      <Text
+                        style={{
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}>
+                        {moment(point.date).format('kk:mm:ss')}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text>{description}</Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              );
+            })}
+          </MapView>
+        </View>
       </View>
     );
   };
@@ -409,12 +524,15 @@ function BlackBoxMainScreen({database}) {
             <Cube isTravelling={isTraveling} />
           </View>
         </View>
+      ) : isMapShown ? (
+        <MapOfPoints />
       ) : list == 'routes' ? (
         <RoutesList />
       ) : (
         <PointsList route={list} />
       )}
-      <View>
+      <View style={styles.buttonsContainer}>
+        <Button title="button" onPress={getData} />
         <MainLabel
           style={
             !isListShown
@@ -444,6 +562,8 @@ function BlackBoxMainScreen({database}) {
               // setListData(getRoutes());
               setList('routes');
 
+              setMapShown(false);
+              setList('routes');
               setListShown(!isListShown);
             }
           }}
@@ -460,6 +580,26 @@ const styles = StyleSheet.create({
     backgroundColor: constants.bgColor,
     width: '100%',
     height: '100%',
+  },
+  mapContainer: {
+    width: '100%',
+    height: '90%',
+    padding: 10,
+  },
+  mapView: {
+    width: '100%',
+    height: '100%',
+  },
+  customMarker: {
+    backgroundColor: 'darkslateblue',
+    width: 7,
+    height: 7,
+    borderColor: 'white',
+    borderWidth: 0.5,
+    borderRadius: 50,
+  },
+  customCallout: {
+    width: 250,
   },
   headerContainer: {
     justifyContent: 'center',
@@ -479,7 +619,8 @@ const styles = StyleSheet.create({
     height: 200,
     opacity: 1,
   },
-  list: {
+  listContainer: {
+    width: '95%',
     borderWidth: 1,
     borderColor: 'lightgray',
     borderRadius: 5,
@@ -488,7 +629,7 @@ const styles = StyleSheet.create({
     margin: 10,
     alignItems: 'center',
     alignSelf: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: 'white',
   },
   listItem: {
