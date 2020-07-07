@@ -1,18 +1,14 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 
 import * as constants from '../../assets/constants';
 import ParamLabel from '../components/ParamLabel';
-import {
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
-import LabelsData from '../LabelsData';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import LabelsData from '../auxiliaries/LabelsData';
 
 const ParamsScreen = ({navigation}) => {
-  // const btModule = useSelector(state => state.main.btModule);
+  const btModule = useSelector(state => state.main.btModule);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
 
   let labelObjectsList = LabelsData();
@@ -31,7 +27,7 @@ const ParamsScreen = ({navigation}) => {
 
   return (
     <View style={styles.screen}>
-      {1 ? (
+      {selectedDevice.id ? (
         <View>
           <View style={styles.heading}>
             <Text style={styles.headerTitle}>
@@ -105,6 +101,7 @@ const styles = StyleSheet.create({
     flex: 5,
     paddingBottom: 8,
     margin: 10,
+    marginBottom: 20,
     alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',
