@@ -1,9 +1,9 @@
 import React from 'react';
 import {Alert, TouchableNativeFeedbackBase} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
-import * as constants from '../assets/constants';
+import * as constants from '../../assets/constants';
 import {decode as btoa, encode as atob} from 'base-64';
-import DeviceListItem from './components/DevicesListItem';
+import DeviceListItem from '../components/DevicesListItem';
 
 class BtModule extends React.Component {
   constructor(props) {
@@ -32,9 +32,7 @@ class BtModule extends React.Component {
     const service = this.serviceUUID;
     const characteristicW = this.writeUUID;
     const characteristicN = this.notifyUUID;
-
     console.log('LOG from setupNotifications, ' + device.name + '  ' + value);
-
     if (value[value.length - 1] !== '\r') {
       value = value + '\r';
     }
@@ -53,36 +51,16 @@ class BtModule extends React.Component {
           console.error(error.message);
           return;
         }
-
         if (characteristic && characteristic.value) {
           if (characteristic.value == 'RVJST1INDT4=') {
             // 'ERROR >'
             console.error('ERROR returned from ELM327');
           }
-
-          let tab = Array.from(btoa(characteristic.value).split(' ')); //elements in hex
-
           if (typeof callback !== 'function') {
             callback = false;
           }
           if (callback) {
             callback(btoa(characteristic.value));
-          }
-
-          let vin = tab
-            .slice(5)
-            .map(el => parseInt(el, 16))
-            .filter(el => (el >= 48 && el <= 57) || (el >= 65 && el <= 90))
-            .map(el => String.fromCharCode(el))
-            .join('');
-
-          if (
-            characteristic.value != 'DT4=' && // '>' && '.'
-            characteristic.value != 'Lg=='
-          ) {
-            // console.log('base :  ' + characteristic.value);
-            // console.log('ori :  ' + btoa(characteristic.value));
-            // console.log(vin);
           }
         }
       }
@@ -150,6 +128,24 @@ class BtModule extends React.Component {
       });
   }
 
+  async getVinNumber(device) {
+    console.log('Getting Vin Number... ');
+    await this.setupNotifications(device, '0902', val => {
+      let tab = Array.from(val.split(' '));
+      let vin = tab
+        .slice(5)
+        .map(el => parseInt(el, 16))
+        .filter(el => (el >= 48 && el <= 57) || (el >= 65 && el <= 90))
+        .map(el => String.fromCharCode(el))
+        .join('');
+      if (vin.length === 17) {
+        this.props.setVinNumber(vin.toString());
+      }
+    }).catch(err => {
+      console.log('Failed to get vin number; ' + err);
+    });
+  }
+
   async scanAndConnect() {
     console.log('scanning for devices...');
 
@@ -199,10 +195,14 @@ class BtModule extends React.Component {
                               [
                                 {
                                   text: 'OK',
-                                  onPress: () => {},
+                                  onPress: () => {
+                                    this.getVinNumber(device).catch(error => {
+                                      console.error(error.message);
+                                    });
+                                  },
                                 },
                               ],
-                              {cancelable: true}
+                              {cancelable: false}
                             );
                             this.props.setBtSearching(false);
                             this.manager.stopDeviceScan();

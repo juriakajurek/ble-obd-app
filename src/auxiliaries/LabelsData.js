@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import ParamLabel from './components/ParamLabel';
 import {responseConverter} from './responseConverter';
 
 import {useSelector, useDispatch} from 'react-redux';
@@ -81,7 +80,7 @@ import {
   setEngineRunTimeSelected,
   setRunTimeSinceEngineStart,
   setRunTimeSinceEngineStartSelected,
-} from './actions/actions';
+} from '../actions/actions';
 
 const LabelsData = () => {
   const checkTimer = i => {
@@ -105,9 +104,8 @@ const LabelsData = () => {
             dispatch(
               setTimer1({
                 id: setInterval(() => {
-                  console.log('CHCIAŁBYM POBRAĆ DANE.1..');
                   onPress[i]();
-                }, 4000),
+                }, timeInterval / 2),
                 index: i,
               })
             );
@@ -117,9 +115,8 @@ const LabelsData = () => {
             dispatch(
               setTimer2({
                 id: setInterval(() => {
-                  console.log('CHCIAŁBYM POBRAĆ DANE.2..');
                   onPress[i]();
-                }, 4000),
+                }, timeInterval / 2),
                 index: i,
               })
             );
@@ -129,9 +126,8 @@ const LabelsData = () => {
             dispatch(
               setTimer3({
                 id: setInterval(() => {
-                  console.log('CHCIAŁBYM POBRAĆ DANE.3..');
                   onPress[i]();
-                }, 4000),
+                }, timeInterval / 2),
                 index: i,
               })
             );
@@ -141,9 +137,8 @@ const LabelsData = () => {
             dispatch(
               setTimer4({
                 id: setInterval(() => {
-                  console.log('CHCIAŁBYM POBRAĆ DANE.4..');
                   onPress[i]();
-                }, 4000),
+                }, timeInterval / 2),
                 index: i,
               })
             );
@@ -191,6 +186,7 @@ const LabelsData = () => {
   const timer2 = useSelector(state => state.params.timer2);
   const timer3 = useSelector(state => state.params.timer3);
   const timer4 = useSelector(state => state.params.timer4);
+  const timeInterval = useSelector(state => state.box.timeInterval);
   const engineLoad = useSelector(state => state.params.engineLoad);
   const isEngineLoadSelected = useSelector(
     state => state.params.isEngineLoadSelected
@@ -406,7 +402,6 @@ const LabelsData = () => {
         if (callback) {
           callback(value);
         }
-        console.log('value: ' + value.toString());
         return value.toString();
       } else return '0';
     });
@@ -533,7 +528,6 @@ const LabelsData = () => {
     () => {
       getParam('04', value => {
         dispatch(setEngineLoad(value));
-        console.log('setted engine load ' + value);
       });
     },
     () => {
@@ -803,132 +797,312 @@ const LabelsData = () => {
       }
     },
     () => {
-      dispatch(setAirFlowRateSelected(!isAirFlowRateSelected));
+      if (isAirFlowRateSelected) {
+        dispatch(setAirFlowRateSelected(false));
+        removeTimer(8);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setAirFlowRateSelected(true));
+          checkTimer(8);
+        }
+      }
     },
     () => {
-      dispatch(setThrottlePositionSelected(!isThrottlePositionSelected));
+      if (isThrottlePositionSelected) {
+        dispatch(setThrottlePositionSelected(false));
+        removeTimer(9);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setThrottlePositionSelected(true));
+          checkTimer(9);
+        }
+      }
     },
     () => {
-      dispatch(
-        setRunTimeSinceEngineStartSelected(!isRunTimeSinceEngineStartSelected)
-      );
+      if (isRunTimeSinceEngineStartSelected) {
+        dispatch(setRunTimeSinceEngineStartSelected(false));
+        removeTimer(10);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setRunTimeSinceEngineStartSelected(true));
+          checkTimer(10);
+        }
+      }
     },
     () => {
-      dispatch(
-        setDistanceTraveledWithMilOnSelected(
-          !isDistanceTraveledWithMilOnSelected
-        )
-      );
+      if (isDistanceTraveledWithMilOnSelected) {
+        dispatch(setDistanceTraveledWithMilOnSelected(false));
+        removeTimer(11);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setDistanceTraveledWithMilOnSelected(true));
+          checkTimer(11);
+        }
+      }
     },
     () => {
-      dispatch(setFuelRailPressureSelected(!isFuelRailPressureSelected));
+      if (isFuelRailPressureSelected) {
+        dispatch(setFuelRailPressureSelected(false));
+        removeTimer(12);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelRailPressureSelected(true));
+          checkTimer(12);
+        }
+      }
     },
     () => {
-      dispatch(setFuelRailGaugeSelected(!isFuelRailGaugeSelected));
+      if (isFuelRailGaugeSelected) {
+        dispatch(setFuelRailGaugeSelected(false));
+        removeTimer(13);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelRailGaugeSelected(true));
+          checkTimer(13);
+        }
+      }
     },
     () => {
-      dispatch(setCommandedEgrSelected(!isCommandedEgrSelected));
+      if (isCommandedEgrSelected) {
+        dispatch(setCommandedEgrSelected(false));
+        removeTimer(14);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setCommandedEgrSelected(true));
+          checkTimer(14);
+        }
+      }
     },
     () => {
-      dispatch(setEgrErrorSelected(!isEgrErrorSelected));
+      if (isEgrErrorSelected) {
+        dispatch(setEgrErrorSelected(false));
+        removeTimer(15);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEgrErrorSelected(true));
+          checkTimer(15);
+        }
+      }
     },
     () => {
-      dispatch(setFuelLevelSelected(!isFuelLevelSelected));
+      if (isFuelLevelSelected) {
+        dispatch(setFuelLevelSelected(false));
+        removeTimer(16);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelLevelSelected(true));
+          checkTimer(16);
+        }
+      }
     },
     () => {
-      dispatch(
-        setWarmUpsSinceCodesClearedSelected(!isWarmUpsSinceCodesClearedSelected)
-      );
+      if (isWarmUpsSinceCodesClearedSelected) {
+        dispatch(setWarmUpsSinceCodesClearedSelected(false));
+        removeTimer(17);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setWarmUpsSinceCodesClearedSelected(true));
+          checkTimer(17);
+        }
+      }
     },
     () => {
-      dispatch(
-        setDistanceTraveledSinceCodesClearedSelected(
-          !isDistanceTraveledSinceCodesClearedSelected
-        )
-      );
+      if (isDistanceTraveledSinceCodesClearedSelected) {
+        dispatch(setDistanceTraveledSinceCodesClearedSelected(false));
+        removeTimer(18);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setDistanceTraveledSinceCodesClearedSelected(true));
+          checkTimer(18);
+        }
+      }
     },
     () => {
-      dispatch(
-        setControlModuleVoltageSelected(!isControlModuleVoltageSelected)
-      );
+      if (isControlModuleVoltageSelected) {
+        dispatch(setControlModuleVoltageSelected(false));
+        removeTimer(19);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setControlModuleVoltageSelected(true));
+          checkTimer(19);
+        }
+      }
     },
     () => {
-      dispatch(
-        setFuelAirCommandedEquivalenceRatioSelected(
-          !isFuelAirCommandedEquivalenceRatioSelected
-        )
-      );
+      if (isFuelAirCommandedEquivalenceRatioSelected) {
+        dispatch(setFuelAirCommandedEquivalenceRatioSelected(false));
+        removeTimer(20);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelAirCommandedEquivalenceRatioSelected(true));
+          checkTimer(20);
+        }
+      }
     },
     () => {
-      dispatch(
-        setRelativeThrottlePositionSelected(!IsRelativeThrottlePositionSelected)
-      );
+      if (IsRelativeThrottlePositionSelected) {
+        dispatch(setRelativeThrottlePositionSelected(false));
+        removeTimer(21);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setRelativeThrottlePositionSelected(true));
+          checkTimer(21);
+        }
+      }
     },
     () => {
-      dispatch(
-        setAmbientAirTemperatureSelected(!IsAmbientAirTemperatureSelected)
-      );
+      if (IsAmbientAirTemperatureSelected) {
+        dispatch(setAmbientAirTemperatureSelected(false));
+        removeTimer(22);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setAmbientAirTemperatureSelected(true));
+          checkTimer(22);
+        }
+      }
     },
     () => {
-      dispatch(setTimeRunWithMilOnSelected(!isTimeRunWithMilOnSelected));
+      if (isTimeRunWithMilOnSelected) {
+        dispatch(setTimeRunWithMilOnSelected(false));
+        removeTimer(23);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setTimeRunWithMilOnSelected(true));
+          checkTimer(23);
+        }
+      }
     },
     () => {
-      dispatch(
-        setTimeSinceTroubleCodesClearedSelected(
-          !isTimeSinceTroubleCodesClearedSelected
-        )
-      );
+      if (isTimeSinceTroubleCodesClearedSelected) {
+        dispatch(setTimeSinceTroubleCodesClearedSelected(false));
+        removeTimer(24);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setTimeSinceTroubleCodesClearedSelected(true));
+          checkTimer(24);
+        }
+      }
     },
     () => {
-      dispatch(setFuelTypeSelected(!isFuelTypeSelected));
+      if (isFuelTypeSelected) {
+        dispatch(setFuelTypeSelected(false));
+        removeTimer(25);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelTypeSelected(true));
+          checkTimer(25);
+        }
+      }
     },
     () => {
-      dispatch(
-        setFuelRailAbsolutePressureSelected(!isFuelRailAbsolutePressureSelected)
-      );
+      if (isFuelRailAbsolutePressureSelected) {
+        dispatch(setFuelRailAbsolutePressureSelected(false));
+        removeTimer(26);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelRailAbsolutePressureSelected(true));
+          checkTimer(26);
+        }
+      }
     },
     () => {
-      dispatch(
-        setRelativeAcceleratorPedalPositionSelected(
-          !isRelativeAcceleratorPedalPositionSelected
-        )
-      );
+      if (isRelativeAcceleratorPedalPositionSelected) {
+        dispatch(setRelativeAcceleratorPedalPositionSelected(false));
+        removeTimer(27);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setRelativeAcceleratorPedalPositionSelected(true));
+          checkTimer(27);
+        }
+      }
     },
     () => {
-      dispatch(
-        setEngineOilTemperatureSelected(!isEngineOilTemperatureSelected)
-      );
+      if (isEngineOilTemperatureSelected) {
+        dispatch(setEngineOilTemperatureSelected(false));
+        removeTimer(28);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEngineOilTemperatureSelected(true));
+          checkTimer(28);
+        }
+      }
     },
     () => {
-      dispatch(setFuelInjectionTimingSelected(!isFuelInjectionTimingSelected));
+      if (isFuelInjectionTimingSelected) {
+        dispatch(setFuelInjectionTimingSelected(false));
+        removeTimer(29);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setFuelInjectionTimingSelected(true));
+          checkTimer(29);
+        }
+      }
     },
     () => {
-      dispatch(setEngineFuelRateSelected(!isEngineFuelRateSelected));
+      if (isEngineFuelRateSelected) {
+        dispatch(setEngineFuelRateSelected(false));
+        removeTimer(30);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEngineFuelRateSelected(true));
+          checkTimer(30);
+        }
+      }
     },
     () => {
-      dispatch(
-        setDriversDemandEnginePercentTorqueSelected(
-          !isDriversDemandEnginePercentTorqueSelected
-        )
-      );
+      if (isDriversDemandEnginePercentTorqueSelected) {
+        dispatch(setDriversDemandEnginePercentTorqueSelected(false));
+        removeTimer(31);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setDriversDemandEnginePercentTorqueSelected(true));
+          checkTimer(31);
+        }
+      }
     },
     () => {
-      dispatch(
-        setActualEnginePercentTorqueSelected(
-          !isActualEnginePercentTorqueSelected
-        )
-      );
+      if (isActualEnginePercentTorqueSelected) {
+        dispatch(setActualEnginePercentTorqueSelected(false));
+        removeTimer(32);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setActualEnginePercentTorqueSelected(true));
+          checkTimer(32);
+        }
+      }
     },
     () => {
-      dispatch(
-        setEngineReferenceTorqueSelected(!isEngineReferenceTorqueSelected)
-      );
+      if (isEngineReferenceTorqueSelected) {
+        dispatch(setEngineReferenceTorqueSelected(false));
+        removeTimer(33);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEngineReferenceTorqueSelected(true));
+          checkTimer(33);
+        }
+      }
     },
     () => {
-      dispatch(setDpfTemperatureSelected(!isDpfTemperatureSelected));
+      if (isDpfTemperatureSelected) {
+        dispatch(setDpfTemperatureSelected(false));
+        removeTimer(34);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setDpfTemperatureSelected(true));
+          checkTimer(34);
+        }
+      }
     },
     () => {
-      dispatch(setEngineRunTimeSelected(!isEngineRunTimeSelected));
+      if (isEngineRunTimeSelected) {
+        dispatch(setEngineRunTimeSelected(false));
+        removeTimer(35);
+      } else {
+        if (findFreeTimer() != -1) {
+          dispatch(setEngineRunTimeSelected(true));
+          checkTimer(35);
+        }
+      }
     },
   ];
 

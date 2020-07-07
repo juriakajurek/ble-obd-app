@@ -4,29 +4,14 @@ import {useSelector, useDispatch} from 'react-redux';
 
 import * as constants from '../../assets/constants';
 import ParamLabel from '../components/ParamLabel';
-import {
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
-import LabelsData from '../LabelsData';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import LabelsData from '../auxiliaries/LabelsData';
 
 const ParamsScreen = ({navigation}) => {
-  // const btModule = useSelector(state => state.main.btModule);
+  const btModule = useSelector(state => state.main.btModule);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
 
   let labelObjectsList = LabelsData();
-  // let [waiting, setWaiting] = useState(false);
-
-  // useEffect(() => {
-
-  //   labelObjectsList.forEach(element => {
-  //     if (element.isSelected) {
-  //       element.onPress();
-  //     }
-  //   });
-  //   wait(5000);
-  // });
 
   const keyExtractor = (item, index) => index.toString();
   const renderItem = ({item}) => (
@@ -42,7 +27,7 @@ const ParamsScreen = ({navigation}) => {
 
   return (
     <View style={styles.screen}>
-      {1 ? (
+      {selectedDevice.id ? (
         <View>
           <View style={styles.heading}>
             <Text style={styles.headerTitle}>

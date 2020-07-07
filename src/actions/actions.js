@@ -90,9 +90,11 @@ import {
   SET_ENGINE_RUN_TIME_SELECTED,
   SET_DX,
   SET_DY,
-  SET_DB_INTERVAL_ID,
+  SET_DB_TIMEOUT_ID,
   SET_CUBE_INTERVAL_ID,
   SET_TIME_INTERVAL,
+  SET_ROUTE_NUMBER,
+  SET_VIN_NUMBER,
 } from './types';
 
 export const setTimer1 = timer1 => ({
@@ -452,9 +454,9 @@ export const setCubeIntervalId = intervalId => ({
   type: SET_CUBE_INTERVAL_ID,
   data: intervalId,
 });
-export const setDbIntervalId = intervalId => ({
-  type: SET_DB_INTERVAL_ID,
-  data: intervalId,
+export const setDbTimeoutId = timeoutId => ({
+  type: SET_DB_TIMEOUT_ID,
+  data: timeoutId,
 });
 export const setCodesShown = bool => ({
   type: SET_CODES_SHOWN,
@@ -471,4 +473,12 @@ export const setTroubleCodes = bool => ({
 export const setTimeInterval = time => ({
   type: SET_TIME_INTERVAL,
   data: time,
+});
+export const setRouteNumber = nr => ({
+  type: SET_ROUTE_NUMBER,
+  data: nr,
+});
+export const setVinNumber = nr => ({
+  type: SET_VIN_NUMBER,
+  data: nr,
 });

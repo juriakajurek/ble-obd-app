@@ -14,12 +14,6 @@ const Cube = props => {
   const dispatch = useDispatch;
 
   useEffect(() => {
-    // if (isTraveling) {
-    //   wink();
-    // } else {
-    //   Animated.timing(scale).stop();
-    //   scale.setValue(1);
-    // }
     roll();
   });
 

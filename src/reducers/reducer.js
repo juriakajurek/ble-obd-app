@@ -6,6 +6,7 @@ import {
   SET_SELECTED_DEVICE,
   ADD_DEVICE,
   ADD_DEVICE_TO_LIST,
+  SET_VIN_NUMBER,
 } from '../actions/types';
 
 const initialState = {
@@ -16,6 +17,7 @@ const initialState = {
   bluetoothStatus: '',
   info: '',
   isBtSearching: false,
+  vinNumber: '',
 };
 
 const reducer = (state = initialState, action) => {
@@ -51,6 +53,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         selectedDevice: action.data,
+      };
+    case SET_VIN_NUMBER:
+      return {
+        ...state,
+        vinNumber: action.data,
       };
     default:
       return state;

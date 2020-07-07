@@ -5,10 +5,7 @@ const ParamLabel = props => {
   return (
     <TouchableNativeFeedback
       onPress={props.onPress}
-      onLongPress={props.onLongPress}
-      // background={TouchableNativeFeedback.Ripple('blue')}
-      // delayPressIn={0}
-    >
+      onLongPress={props.onLongPress}>
       <View
         style={
           props.isSelected

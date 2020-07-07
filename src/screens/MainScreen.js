@@ -14,11 +14,12 @@ import MainLabel from '../components/MainLabel';
 import * as constants from '../../assets/constants';
 
 import {ScrollView} from 'react-native-gesture-handler';
-import {setInfo} from '../actions/actions';
+import {setInfo, setVinNumber} from '../actions/actions';
 
 function MainScreen({navigation}) {
   const carInfo = useSelector(state => state.main.info);
   const selectedDevice = useSelector(state => state.main.selectedDevice);
+  const vinNumber = useSelector(state => state.main.vinNumber);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,7 +27,18 @@ function MainScreen({navigation}) {
     console.disableYellowBox = true;
 
     if (selectedDevice && selectedDevice.name !== undefined) {
-      dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));
+      if (!vinNumber) {
+        dispatch(setInfo('Podłączone urządzenie: ' + selectedDevice.name));
+      } else {
+        dispatch(
+          setInfo(
+            'Podłączone urządzenie: ' +
+              selectedDevice.name +
+              '\n\nVIN pojazdu: ' +
+              vinNumber
+          )
+        );
+      }
     } else {
       dispatch(
         setInfo('Połącz się ze swoim samochodem przechodząc do Ustawień. ')
@@ -66,11 +78,6 @@ function MainScreen({navigation}) {
           onPress={() => navigation.navigate('BlackBox')}
           iconName="treasure-chest">
           Czarna skrzynka
-        </MainLabel>
-        <MainLabel
-          onPress={() => navigation.navigate('Extras')}
-          iconName="star">
-          Extras
         </MainLabel>
         <MainLabel
           style={styles.lastLabel}

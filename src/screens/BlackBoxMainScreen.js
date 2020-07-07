@@ -1,16 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  ImageBackground,
-  Item,
-  Button,
-  Animated,
-  Alert,
-} from 'react-native';
-import {Q} from '@nozbe/watermelondb';
+import {StyleSheet, View, Animated, PermissionsAndroid} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import moment from 'moment';
 import {
@@ -20,8 +9,8 @@ import {
   setDx,
   setDy,
   setCubeIntervalId,
-  setDbIntervalId,
-  setLastPointId,
+  setDbTimeoutId,
+  setRouteNumber,
 } from '../actions/actions';
 import LottieView from 'lottie-react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -30,17 +19,16 @@ import MainLabel from '../components/MainLabel';
 import Cube from '../components/Cube';
 import withObservables from '@nozbe/with-observables';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import {FlatList} from 'react-native-gesture-handler';
 import {Easing} from 'react-native-reanimated';
-import ParamLabel from '../components/ParamLabel';
-import LabelsData from '../LabelsData';
+import LabelsData from '../auxiliaries/LabelsData';
 
-import MapView from 'react-native-maps';
-import {Marker, Callout} from 'react-native-maps';
+import RoutesList from '../components/RoutesList';
+import PointsList from '../components/PointsList';
+import MapOfPoints from '../components/MapOfPoints';
 
 function BlackBoxMainScreen({database}) {
   const routesCollection = database.collections.get('routes');
-  // const allRoutes = getAllRoutes(routesCollection);
+  // const allRoutes = routesCollection.query().fetch();
   let routesMap = routesCollection._cache.map;
   let [watchId, setWatchId] = useState('');
   let [isDataShown, setDataShown] = useState(false);
@@ -48,74 +36,7 @@ function BlackBoxMainScreen({database}) {
   let [list, setList] = useState('');
   let [isMapShown, setMapShown] = useState(false);
 
-  const rpm = useSelector(state => state.params.rpm);
-
   let data = LabelsData();
-
-  function getData() {
-    let selectedData = data.filter(param => {
-      return param.isSelected;
-    });
-    console.log(selectedData[0].value); //<tu sie wartosc zmienia...
-
-    return selectedData;
-  }
-
-  // function getrpm() {
-  //   return rpm;
-  // }
-
-  const getParamData = async () => {
-    return getData()
-      .map(element => {
-        return element.title + ': ' + element.value;
-      })
-      .join();
-  };
-
-  const addd = async () => {
-    getParamData().then(d => console.log(d)); //<a tu jakby freezen frame czy coś
-    await getParamData()
-      .then(data => {
-        Geolocation.getCurrentPosition(
-          info => {
-            addPointToDb({
-              paramsData: data,
-
-              geo: `${info.coords.latitude}:${info.coords.longitude}`,
-              acc: info.coords.accuracy,
-              speed: info.coords.speed,
-              date: moment(),
-              route:
-                Array.isArray(pointsArray) && pointsArray.length
-                  ? parseInt(pointsArray[pointsArray.length - 1].route) + 1
-                  : 1,
-            });
-
-            console.log(
-              'Point added: ' +
-                info.coords.latitude +
-                ', ' +
-                info.coords.longitude,
-              data
-            );
-          },
-          error => {
-            console.log('Point cannot be added; ' + error.message);
-          },
-          {
-            timeout: timeInterval,
-            maximumAge: timeInterval,
-            enableHighAccuracy: true,
-          }
-        );
-      })
-      .then(() => {
-        dispatch(setDbIntervalId(null));
-      });
-    // setTimeout(addd, 6000);
-  };
-
   let pointsArray = [];
   for (const element of routesMap) {
     pointsArray.push({
@@ -129,39 +50,76 @@ function BlackBoxMainScreen({database}) {
     });
   }
 
-  const getRoutes = () => {
-    let array = [];
-    if (Array.isArray(pointsArray) && pointsArray.length) {
-      let lastRouteNumber = parseInt(pointsArray[pointsArray.length - 1].route);
-      for (let i = 1; i <= lastRouteNumber; i++) {
-        let index = pointsArray.findIndex(el => {
-          return el.route == i;
-        });
-        if (index != -1) {
-          array.push({
-            date: pointsArray[index].date,
-            id: pointsArray[index].id,
-            route: pointsArray[index].route,
-          });
-        }
-      }
-    }
-    return array;
-  };
-
-  const dataOpacity = useRef(new Animated.Value(0)).current;
+  const dataAnimationOpacity = useRef(new Animated.Value(0)).current;
   const isTraveling = useSelector(state => state.box.isTraveling);
   const dx = useSelector(state => state.box.dx);
   const dy = useSelector(state => state.box.dy);
   const cubeIntervalId = useSelector(state => state.box.cubeIntervalId);
-  const dbIntervalId = useSelector(state => state.box.dbIntervalId);
+  const dbTimeoutId = useSelector(state => state.box.dbTimeoutId);
   const timeInterval = useSelector(state => state.box.timeInterval);
+  const routeNumber = useSelector(state => state.box.routeNumber);
   const buttonText = useSelector(state => state.box.buttonText);
   const buttonIcon = useSelector(state => state.box.buttonIcon);
   const dispatch = useDispatch();
 
   let ddx = dx;
   let ddy = dy;
+
+  const getParamData = async () => {
+    let selectedData = data.filter(param => {
+      return param.isSelected;
+    });
+    return selectedData
+      .map(element => {
+        return element.title + ': ' + element.value;
+      })
+      .join();
+  };
+
+  const getRouteNumber = () => {
+    if (routeNumber) {
+      return routeNumber;
+    } else {
+      dispatch(setRouteNumber(1));
+      return 1;
+    }
+  };
+
+  const addData = async () => {
+    await getParamData()
+      .then(data => {
+        Geolocation.getCurrentPosition(
+          info => {
+            addPointToDb({
+              paramsData: data,
+              geo: `${info.coords.latitude}:${info.coords.longitude}`,
+              acc: info.coords.accuracy,
+              speed: info.coords.speed,
+              date: moment(),
+              route: getRouteNumber(),
+            });
+            console.log(
+              'Point added: ' +
+                info.coords.latitude +
+                ', ' +
+                info.coords.longitude,
+              data
+            );
+          },
+          error => {
+            console.log('Point cannot be added; ' + error.message);
+          },
+          {
+            timeout: timeInterval,
+            maximumAge: timeInterval + 1000,
+            enableHighAccuracy: true,
+          }
+        );
+      })
+      .then(() => {
+        dispatch(setDbTimeoutId(null));
+      });
+  };
 
   useEffect(() => {
     if (isTraveling) {
@@ -173,10 +131,10 @@ function BlackBoxMainScreen({database}) {
         dispatch(
           setCubeIntervalId(
             setInterval(() => {
-              if (ddx > 3000) {
+              if (ddx > 3620) {
                 ddx = -ddx;
               }
-              if (ddy > 3000) {
+              if (ddy > 3590) {
                 ddy = -ddy;
               }
               dispatch(setDx((ddx += 1)));
@@ -185,23 +143,18 @@ function BlackBoxMainScreen({database}) {
           )
         );
       }
-      if (!dbIntervalId) {
-        dispatch(setDbIntervalId(setTimeout(addd, timeInterval)));
+      if (!dbTimeoutId) {
+        dispatch(setDbTimeoutId(setTimeout(addData, timeInterval)));
       }
     } else {
       if (isDataShown) {
         hideData();
         setDataShown(false);
       }
-
-      dispatch(setDx(20));
-      dispatch(setDy(-10));
+      dispatch(setDx(3260));
+      dispatch(setDy(3230));
     }
   });
-
-  async function getAllRoutes(collection) {
-    return await collection.query().fetch();
-  }
 
   const addPointToDb = async data => {
     await database
@@ -217,6 +170,7 @@ function BlackBoxMainScreen({database}) {
       })
       .then(() => {});
   };
+
   const deletePoint = async id => {
     const routeToDelete = await routesCollection.find(id);
     await database.action(async () => {
@@ -225,7 +179,7 @@ function BlackBoxMainScreen({database}) {
   };
 
   const showData = () => {
-    Animated.timing(dataOpacity, {
+    Animated.timing(dataAnimationOpacity, {
       toValue: 1,
       duration: 3000,
       easing: Easing.linear,
@@ -233,7 +187,7 @@ function BlackBoxMainScreen({database}) {
     }).start();
   };
   const hideData = () => {
-    Animated.timing(dataOpacity, {
+    Animated.timing(dataAnimationOpacity, {
       toValue: 0,
       duration: 1000,
       easing: Easing.linear,
@@ -255,264 +209,16 @@ function BlackBoxMainScreen({database}) {
     dispatch(setButtonIcon('play-circle'));
     clearInterval(cubeIntervalId);
     dispatch(setCubeIntervalId(null));
-    clearInterval(dbIntervalId);
-    dispatch(setDbIntervalId(null));
-  };
-
-  const keyExtractor = (item, index) => index.toString();
-  const renderItem = ({item}) => (
-    <ParamLabel
-      style={styles.listItem}
-      key={item.id}
-      value={item.route}
-      title={moment(item.date).format('D.MM.YYYY, kk:mm')}
-      onPress={() => {
-        Alert.alert(
-          'Co chcesz zrobić?',
-          '',
-          [
-            {
-              text: 'Przeglądaj dane trasy',
-              onPress: () => {
-                setList(item.route);
-              },
-            },
-            {
-              text: 'Pokaż na mapie',
-              onPress: () => {
-                setList(item.route);
-
-                setMapShown(true);
-              },
-            },
-
-            {
-              text: 'Usuń trasę',
-              onPress: () => {
-                let routeToDelete = item.route;
-                pointsArray.forEach(point => {
-                  if (point.route == routeToDelete) {
-                    deletePoint(point.id);
-                  }
-                });
-              },
-              style: 'cancel',
-            },
-          ],
-          {cancelable: true}
-        );
-      }}
-    />
-  );
-
-  const renderPointItem = ({item, index}) => (
-    <ParamLabel
-      style={styles.listItem}
-      key={item.id}
-      title={index + 1}
-      value={moment(item.date).format('kk:mm:ss')}
-      onPress={() => {
-        Alert.alert(
-          'Co chcesz zrobić?',
-          '',
-          [
-            {
-              text: 'Zobacz zapisane dane',
-              onPress: () => {
-                let entriesArray = Object.entries(item);
-                Alert.alert(
-                  'Zapisane dane ',
-                  createDescription(entriesArray),
-                  [
-                    {
-                      text: 'Powrót',
-                    },
-                  ],
-                  {cancelable: true}
-                );
-                setList(item.route);
-              },
-            },
-            {
-              text: 'Usuń punkt',
-              onPress: () => {
-                let pointToDelete = item.id;
-                deletePoint(pointToDelete);
-              },
-              style: 'cancel',
-            },
-          ],
-          {cancelable: true}
-        );
-      }}
-    />
-  );
-
-  let PointsList = props => {
-    return (
-      <View style={styles.listContainer}>
-        <ParamLabel
-          style={styles.legend}
-          key={'listLegend'}
-          value={''}
-          title={'<  Powrót'}
-          onPress={() => {
-            setList('routes');
-          }}
-        />
-        <FlatList
-          keyExtractor={keyExtractor}
-          data={pointsArray.filter(point => {
-            return point.route === props.route;
-          })}
-          renderItem={renderPointItem}
-        />
-      </View>
-    );
-  };
-
-  let RoutesList = () => {
-    return (
-      <View style={styles.listContainer}>
-        <ParamLabel
-          style={styles.legend}
-          key={'listLegend'}
-          value={'Nr trasy'}
-          title={'Data'}
-          onPress={() => {}}
-        />
-        <FlatList
-          keyExtractor={keyExtractor}
-          data={getRoutes()}
-          renderItem={renderItem}
-        />
-      </View>
-    );
-  };
-
-  const createDescription = entriesArray => {
-    let description = '';
-    let i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('date');
-    });
-    if (i != -1 && entriesArray[i][1]) {
-      description +=
-        '• Data: ' + moment(entriesArray[i][1]).format('D.MM.YYYY') + '\n';
-    }
-    i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('route');
-    });
-    if (i != -1 && entriesArray[i][1]) {
-      description += '• Nr trasy: ' + entriesArray[i][1] + '\n';
-    }
-    i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('geo');
-    });
-    if (i != -1 && entriesArray[i][1]) {
-      description +=
-        '• Współrzędne gps: ' + entriesArray[i][1].split(':').join(', ') + '\n';
-    }
-    i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('acc');
-    });
-    if (i != -1 && entriesArray[i][1]) {
-      description +=
-        '• Dokładność gps: ' +
-        Math.round(parseFloat(entriesArray[i][1] * 100) / 100) +
-        'm\n';
-    }
-    i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('speed');
-    });
-    if ((i != -1 && entriesArray[i][1]) || entriesArray[i][1] === 0) {
-      description += '• Prędkość gps: ' + entriesArray[i][1] + '\n';
-    }
-    i = entriesArray.findIndex(element => {
-      return element[0].toString().includes('paramsData');
-    });
-    if (i != -1 && entriesArray[i][1]) {
-      description +=
-        '• Zapisane parametry: ' +
-        entriesArray[i][1].split(',').map(el => {
-          return '\n  ' + el;
-        }) +
-        '\n';
-    }
-    return description;
-  };
-
-  let MapOfPoints = () => {
-    const waypoints = pointsArray.filter(point => {
-      return point.route === parseInt(list);
-    });
-    return (
-      <View style={styles.listContainer}>
-        <ParamLabel
-          style={styles.legend}
-          key={'listLegend'}
-          value={''}
-          title={'<  Powrót'}
-          onPress={() => {
-            setMapShown(false);
-            setList('routes');
-          }}
-        />
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.mapView}
-            initialCamera={{
-              center: {
-                latitude: parseFloat(waypoints[0].geo.split(':')[0]),
-                longitude: parseFloat(waypoints[0].geo.split(':')[1]),
-              },
-              pitch: 0,
-              heading: 0,
-              altitude: 1,
-              zoom: 13,
-            }}>
-            {waypoints.map((point, index) => {
-              let entriesArray = Object.entries(point);
-
-              let description = createDescription(entriesArray);
-
-              return (
-                <Marker
-                  key={index}
-                  coordinate={{
-                    latitude: parseFloat(point.geo.split(':')[0]),
-                    longitude: parseFloat(point.geo.split(':')[1]),
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                  }}>
-                  <View style={styles.customMarker} />
-                  <Callout onPress={() => {}} style={styles.customCallout}>
-                    <View>
-                      <Text
-                        style={{
-                          fontWeight: 'bold',
-                          textAlign: 'center',
-                        }}>
-                        {moment(point.date).format('kk:mm:ss')}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text>{description}</Text>
-                    </View>
-                  </Callout>
-                </Marker>
-              );
-            })}
-          </MapView>
-        </View>
-      </View>
-    );
+    clearInterval(dbTimeoutId);
+    dispatch(setDbTimeoutId(null));
+    dispatch(setRouteNumber(routeNumber + 1));
   };
 
   return (
     <View style={styles.screen}>
       {!isListShown ? (
         <View style={styles.headerContainer}>
-          <Animated.View style={[styles.data, {opacity: dataOpacity}]}>
+          <Animated.View style={[styles.data, {opacity: dataAnimationOpacity}]}>
             <LottieView
               resizeMode="cover"
               source={require('../../assets/data.json')}
@@ -525,14 +231,28 @@ function BlackBoxMainScreen({database}) {
           </View>
         </View>
       ) : isMapShown ? (
-        <MapOfPoints />
+        <MapOfPoints
+          setMapShown={setMapShown}
+          pointsArray={pointsArray}
+          list={list}
+          setList={setList}
+        />
       ) : list == 'routes' ? (
-        <RoutesList />
+        <RoutesList
+          pointsArray={pointsArray}
+          setList={setList}
+          deletePoint={deletePoint}
+          setMapShown={setMapShown}
+        />
       ) : (
-        <PointsList route={list} />
+        <PointsList
+          route={list}
+          pointsArray={pointsArray}
+          setList={setList}
+          deletePoint={deletePoint}
+        />
       )}
       <View style={styles.buttonsContainer}>
-        <Button title="button" onPress={getData} />
         <MainLabel
           style={
             !isListShown
@@ -559,11 +279,8 @@ function BlackBoxMainScreen({database}) {
           }
           onPress={() => {
             if (!isTraveling) {
-              // setListData(getRoutes());
               setList('routes');
-
               setMapShown(false);
-              setList('routes');
               setListShown(!isListShown);
             }
           }}
@@ -581,26 +298,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  mapContainer: {
-    width: '100%',
-    height: '90%',
-    padding: 10,
-  },
-  mapView: {
-    width: '100%',
-    height: '100%',
-  },
-  customMarker: {
-    backgroundColor: 'darkslateblue',
-    width: 7,
-    height: 7,
-    borderColor: 'white',
-    borderWidth: 0.5,
-    borderRadius: 50,
-  },
-  customCallout: {
-    width: 250,
-  },
+
   headerContainer: {
     justifyContent: 'center',
     flex: 5,
@@ -657,7 +355,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     opacity: 0.2,
   },
-
   item: {
     backgroundColor: '#f9c2ff',
     padding: 20,
