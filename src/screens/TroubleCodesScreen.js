@@ -78,6 +78,22 @@ const TroubleCodesScreen = ({navigation}, props) => {
 
   const clearTroubleCodes = async () => {
     await btModule.setupNotifications(selectedDevice, '04', val => {
+      React.createElement(
+        View,
+        null,
+        React.createElement(
+          MyButton,
+          {
+            color: 'blue',
+            shadowSize: 2,
+            style: {
+              backgroundColor: 'red',
+            },
+          },
+          'Kliknij mnie'
+        )
+      );
+
       // if (tab[0].toString().includes('ELM327')) {
       //   return '0';
       // }
