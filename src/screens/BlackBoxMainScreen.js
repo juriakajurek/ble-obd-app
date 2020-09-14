@@ -1,16 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  ImageBackground,
-  Item,
-  Button,
-  Animated,
-  Alert,
-} from 'react-native';
-import {Q} from '@nozbe/watermelondb';
+import {StyleSheet, View, Animated, PermissionsAndroid} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import moment from 'moment';
 import {
@@ -20,8 +9,8 @@ import {
   setDx,
   setDy,
   setCubeIntervalId,
-  setDbIntervalId,
-  setLastPointId,
+  setDbTimeoutId,
+  setRouteNumber,
 } from '../actions/actions';
 import LottieView from 'lottie-react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -30,24 +19,24 @@ import MainLabel from '../components/MainLabel';
 import Cube from '../components/Cube';
 import withObservables from '@nozbe/with-observables';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import {FlatList} from 'react-native-gesture-handler';
 import {Easing} from 'react-native-reanimated';
-import ParamLabel from '../components/ParamLabel';
-import LabelsData from '../LabelsData';
+import LabelsData from '../auxiliaries/LabelsData';
+
+import RoutesList from '../components/RoutesList';
+import PointsList from '../components/PointsList';
+import MapOfPoints from '../components/MapOfPoints';
 
 function BlackBoxMainScreen({database}) {
   const routesCollection = database.collections.get('routes');
-  // const allRoutes = getAllRoutes(routesCollection);
+  // const allRoutes = routesCollection.query().fetch();
   let routesMap = routesCollection._cache.map;
   let [watchId, setWatchId] = useState('');
   let [isDataShown, setDataShown] = useState(false);
   let [isListShown, setListShown] = useState(false);
   let [list, setList] = useState('');
+  let [isMapShown, setMapShown] = useState(false);
 
-  let selectedParamsList = LabelsData().filter(param => {
-    return param.isSelected;
-  });
-
+  let data = LabelsData();
   let pointsArray = [];
   for (const element of routesMap) {
     pointsArray.push({
@@ -61,39 +50,76 @@ function BlackBoxMainScreen({database}) {
     });
   }
 
-  const getRoutes = () => {
-    let array = [];
-    if (Array.isArray(pointsArray) && pointsArray.length) {
-      let lastRouteNumber = parseInt(pointsArray[pointsArray.length - 1].route);
-      for (let i = 1; i <= lastRouteNumber; i++) {
-        let index = pointsArray.findIndex(el => {
-          return el.route == i;
-        });
-        if (index != -1) {
-          array.push({
-            date: pointsArray[index].date,
-            id: pointsArray[index].id,
-            route: pointsArray[index].route,
-          });
-        }
-      }
-    }
-    return array;
-  };
-
-  const dataOpacity = useRef(new Animated.Value(0)).current;
+  const dataAnimationOpacity = useRef(new Animated.Value(0)).current;
   const isTraveling = useSelector(state => state.box.isTraveling);
   const dx = useSelector(state => state.box.dx);
   const dy = useSelector(state => state.box.dy);
   const cubeIntervalId = useSelector(state => state.box.cubeIntervalId);
-  const dbIntervalId = useSelector(state => state.box.dbIntervalId);
+  const dbTimeoutId = useSelector(state => state.box.dbTimeoutId);
   const timeInterval = useSelector(state => state.box.timeInterval);
+  const routeNumber = useSelector(state => state.box.routeNumber);
   const buttonText = useSelector(state => state.box.buttonText);
   const buttonIcon = useSelector(state => state.box.buttonIcon);
   const dispatch = useDispatch();
 
   let ddx = dx;
   let ddy = dy;
+
+  const getParamData = async () => {
+    let selectedData = data.filter(param => {
+      return param.isSelected;
+    });
+    return selectedData
+      .map(element => {
+        return element.title + ': ' + element.value;
+      })
+      .join();
+  };
+
+  const getRouteNumber = () => {
+    if (routeNumber) {
+      return routeNumber;
+    } else {
+      dispatch(setRouteNumber(1));
+      return 1;
+    }
+  };
+
+  const addData = async () => {
+    await getParamData()
+      .then(data => {
+        Geolocation.getCurrentPosition(
+          info => {
+            addPointToDb({
+              paramsData: data,
+              geo: `${info.coords.latitude}:${info.coords.longitude}`,
+              acc: info.coords.accuracy,
+              speed: info.coords.speed,
+              date: moment(),
+              route: getRouteNumber(),
+            });
+            console.log(
+              'Point added: ' +
+                info.coords.latitude +
+                ', ' +
+                info.coords.longitude,
+              data
+            );
+          },
+          error => {
+            console.log('Point cannot be added; ' + error.message);
+          },
+          {
+            timeout: timeInterval,
+            maximumAge: timeInterval + 1000,
+            enableHighAccuracy: true,
+          }
+        );
+      })
+      .then(() => {
+        dispatch(setDbTimeoutId(null));
+      });
+  };
 
   useEffect(() => {
     if (isTraveling) {
@@ -105,10 +131,10 @@ function BlackBoxMainScreen({database}) {
         dispatch(
           setCubeIntervalId(
             setInterval(() => {
-              if (ddx > 3000) {
+              if (ddx > 3620) {
                 ddx = -ddx;
               }
-              if (ddy > 3000) {
+              if (ddy > 3590) {
                 ddy = -ddy;
               }
               dispatch(setDx((ddx += 1)));
@@ -117,63 +143,18 @@ function BlackBoxMainScreen({database}) {
           )
         );
       }
-      if (!dbIntervalId) {
-        dispatch(
-          setDbIntervalId(
-            setInterval(() => {
-              Geolocation.getCurrentPosition(
-                info => {
-                  addPointToDb({
-                    paramsData: selectedParamsList
-                      .map(element => {
-                        return element.title + ':' + element.value;
-                      })
-                      .toString(),
-                    geo: `${info.coords.latitude}:${info.coords.longitude}`,
-                    acc: info.coords.accuracy,
-                    speed: info.coords.speed,
-                    date: moment(),
-                    route:
-                      Array.isArray(pointsArray) && pointsArray.length
-                        ? parseInt(pointsArray[pointsArray.length - 1].route) +
-                          1
-                        : 1,
-                  });
-
-                  console.log(
-                    'Point added: ' +
-                      info.coords.latitude +
-                      ', ' +
-                      info.coords.longitude
-                  );
-                },
-                error => {
-                  console.log('Point cannot be added; ' + error.message);
-                },
-                {
-                  timeout: timeInterval,
-                  maximumAge: timeInterval,
-                  enableHighAccuracy: true,
-                }
-              );
-            }, timeInterval)
-          )
-        );
+      if (!dbTimeoutId) {
+        dispatch(setDbTimeoutId(setTimeout(addData, timeInterval)));
       }
     } else {
       if (isDataShown) {
         hideData();
         setDataShown(false);
       }
-
-      dispatch(setDx(20));
-      dispatch(setDy(-10));
+      dispatch(setDx(3260));
+      dispatch(setDy(3230));
     }
   });
-
-  async function getAllRoutes(collection) {
-    return await collection.query().fetch();
-  }
 
   const addPointToDb = async data => {
     await database
@@ -189,6 +170,7 @@ function BlackBoxMainScreen({database}) {
       })
       .then(() => {});
   };
+
   const deletePoint = async id => {
     const routeToDelete = await routesCollection.find(id);
     await database.action(async () => {
@@ -197,7 +179,7 @@ function BlackBoxMainScreen({database}) {
   };
 
   const showData = () => {
-    Animated.timing(dataOpacity, {
+    Animated.timing(dataAnimationOpacity, {
       toValue: 1,
       duration: 3000,
       easing: Easing.linear,
@@ -205,7 +187,7 @@ function BlackBoxMainScreen({database}) {
     }).start();
   };
   const hideData = () => {
-    Animated.timing(dataOpacity, {
+    Animated.timing(dataAnimationOpacity, {
       toValue: 0,
       duration: 1000,
       easing: Easing.linear,
@@ -227,177 +209,16 @@ function BlackBoxMainScreen({database}) {
     dispatch(setButtonIcon('play-circle'));
     clearInterval(cubeIntervalId);
     dispatch(setCubeIntervalId(null));
-    clearInterval(dbIntervalId);
-    dispatch(setDbIntervalId(null));
-  };
-
-  const keyExtractor = (item, index) => index.toString();
-  const renderItem = ({item}) => (
-    <ParamLabel
-      style={styles.listItem}
-      key={item.id}
-      value={item.route}
-      title={moment(item.date).format('D.MM.YYYY, kk:mm')}
-      onPress={() => {
-        Alert.alert(
-          'Co chcesz zrobić?',
-          '',
-          [
-            {
-              text: 'Przeglądaj dane trasy',
-              onPress: () => {
-                setList(item.route);
-              },
-            },
-            {
-              text: 'Otwórz w mapach Google',
-              onPress: () => console.log('Ask me later pressed'),
-            },
-
-            {
-              text: 'Usuń trasę',
-              onPress: () => {
-                let routeToDelete = item.route;
-                pointsArray.forEach(point => {
-                  if (point.route == routeToDelete) {
-                    deletePoint(point.id);
-                  }
-                });
-              },
-              style: 'cancel',
-            },
-          ],
-          {cancelable: true}
-        );
-      }}
-    />
-  );
-
-  const renderPointItem = ({item, index}) => (
-    <ParamLabel
-      style={styles.listItem}
-      key={item.id}
-      title={index + 1}
-      value={moment(item.date).format('kk:mm:ss')}
-      onPress={() => {
-        Alert.alert(
-          'Co chcesz zrobić?',
-          '',
-          [
-            {
-              text: 'Zobacz zapisane dane',
-              onPress: () => {
-                let entriesArray = Object.entries(item);
-                Alert.alert(
-                  'Zapisane dane ',
-                  entriesArray
-                    .map(el => {
-                      console.log(el);
-                      switch (el[0].toString()) {
-                        case 'acc':
-                          return (
-                            'Dokładność lokalizacji: ' +
-                            Math.round(parseFloat(el[1]) * 100) / 100
-                          );
-                        case 'date':
-                          return (
-                            'Data: ' +
-                            moment(el[1]).format('D.MM.YYYY, kk:mm:ss')
-                          );
-                        case 'geo':
-                          return 'Położenie geograficzne: ' + el[1];
-                        case 'id':
-                          return 'ID punktu: ' + el[1];
-                        case 'paramsData':
-                          return (
-                            'Zapisane parametry: ' +
-                            el[1].split(',').map(el => {
-                              return '\n' + el;
-                            })
-                          );
-                        case 'route':
-                          return 'Nr trasy: ' + el[1];
-                        case 'speed':
-                          return 'Prędkość: ' + el[1];
-                        default:
-                          return;
-                      }
-                    })
-                    .join('\n')
-                    .toString(),
-                  [
-                    {
-                      text: 'Powrót',
-                    },
-                  ],
-                  {cancelable: true}
-                );
-                setList(item.route);
-              },
-            },
-            {
-              text: 'Usuń punkt',
-              onPress: () => {
-                let pointToDelete = item.id;
-                deletePoint(pointToDelete);
-              },
-
-              style: 'cancel',
-            },
-          ],
-          {cancelable: true}
-        );
-      }}
-    />
-  );
-
-  let PointsList = props => {
-    return (
-      <View style={styles.list}>
-        <ParamLabel
-          style={styles.legend}
-          key={'listLegend'}
-          value={''}
-          title={'<  Powrót'}
-          onPress={() => {
-            setList('routes');
-          }}
-        />
-        <FlatList
-          keyExtractor={keyExtractor}
-          data={pointsArray.filter(point => {
-            return point.route === props.route;
-          })}
-          renderItem={renderPointItem}
-        />
-      </View>
-    );
-  };
-
-  let RoutesList = () => {
-    return (
-      <View style={styles.list}>
-        <ParamLabel
-          style={styles.legend}
-          key={'listLegend'}
-          value={'Nr trasy'}
-          title={'Data'}
-          onPress={() => {}}
-        />
-        <FlatList
-          keyExtractor={keyExtractor}
-          data={getRoutes()}
-          renderItem={renderItem}
-        />
-      </View>
-    );
+    clearInterval(dbTimeoutId);
+    dispatch(setDbTimeoutId(null));
+    dispatch(setRouteNumber(routeNumber + 1));
   };
 
   return (
     <View style={styles.screen}>
       {!isListShown ? (
         <View style={styles.headerContainer}>
-          <Animated.View style={[styles.data, {opacity: dataOpacity}]}>
+          <Animated.View style={[styles.data, {opacity: dataAnimationOpacity}]}>
             <LottieView
               resizeMode="cover"
               source={require('../../assets/data.json')}
@@ -409,12 +230,29 @@ function BlackBoxMainScreen({database}) {
             <Cube isTravelling={isTraveling} />
           </View>
         </View>
+      ) : isMapShown ? (
+        <MapOfPoints
+          setMapShown={setMapShown}
+          pointsArray={pointsArray}
+          list={list}
+          setList={setList}
+        />
       ) : list == 'routes' ? (
-        <RoutesList />
+        <RoutesList
+          pointsArray={pointsArray}
+          setList={setList}
+          deletePoint={deletePoint}
+          setMapShown={setMapShown}
+        />
       ) : (
-        <PointsList route={list} />
+        <PointsList
+          route={list}
+          pointsArray={pointsArray}
+          setList={setList}
+          deletePoint={deletePoint}
+        />
       )}
-      <View>
+      <View style={styles.buttonsContainer}>
         <MainLabel
           style={
             !isListShown
@@ -441,9 +279,8 @@ function BlackBoxMainScreen({database}) {
           }
           onPress={() => {
             if (!isTraveling) {
-              // setListData(getRoutes());
               setList('routes');
-
+              setMapShown(false);
               setListShown(!isListShown);
             }
           }}
@@ -461,6 +298,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+
   headerContainer: {
     justifyContent: 'center',
     flex: 5,
@@ -479,7 +317,8 @@ const styles = StyleSheet.create({
     height: 200,
     opacity: 1,
   },
-  list: {
+  listContainer: {
+    width: '95%',
     borderWidth: 1,
     borderColor: 'lightgray',
     borderRadius: 5,
@@ -488,7 +327,7 @@ const styles = StyleSheet.create({
     margin: 10,
     alignItems: 'center',
     alignSelf: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: 'white',
   },
   listItem: {
@@ -516,7 +355,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     opacity: 0.2,
   },
-
   item: {
     backgroundColor: '#f9c2ff',
     padding: 20,

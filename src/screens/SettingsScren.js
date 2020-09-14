@@ -1,16 +1,9 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  PermissionsAndroid,
-  ScrollView,
-  Switch,
-} from 'react-native';
+import {StyleSheet, View, Text, ScrollView, Switch} from 'react-native';
 import {connect} from 'react-redux';
 import * as constants from '../../assets/constants';
 
-import BtModule from '../BtModule';
+import BtModule from '../auxiliaries/BtModule';
 import DeviceListItem from '../components/DevicesListItem';
 import SearchingStatus from '../components/SearchingStatus';
 import {BluetoothStatus} from 'react-native-bluetooth-status';
@@ -23,43 +16,9 @@ import {
   setSelectedDevice,
   setBtSearching,
   setBluetoothStatus,
+  setVinNumber,
 } from '../actions/actions';
-
-async function requestLocationPermission() {
-  try {
-    let granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      {
-        title: '',
-        message: 'ObdApp needs access to your Location ',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      }
-    ).then(
-      await PermissionsAndroid.request(
-        (granted = PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION),
-        {
-          title: '',
-          message: 'ObdApp needs access to your Location ',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        }
-      )
-    );
-
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('You can know the Location');
-      return true;
-    } else {
-      console.log('Location permission denied');
-      return false;
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-}
+import requestLocationPermission from '../auxiliaries/requestLocationPermission';
 
 class SettingsScreen extends React.Component {
   constructor(props) {
@@ -73,7 +32,11 @@ class SettingsScreen extends React.Component {
 
     if (!this.props.btModule.manager) {
       this.props.setBtModule(
-        new BtModule({...this.props, getDevices: this.getDevices})
+        new BtModule({
+          ...this.props,
+          getDevices: this.getDevices,
+          setVinNumber: this.props.setVinNumber,
+        })
       );
     }
   }
@@ -130,10 +93,7 @@ class SettingsScreen extends React.Component {
               ) : this.props.selectedDevice.id ? (
                 <View>
                   <Text style={styles.headerDescription}>
-                    Połączone urządzenie:{' '}
-                    {this.props.selectedDevice.id
-                      ? this.props.selectedDevice.name
-                      : ''}
+                    Połączone urządzenie: {this.props.selectedDevice.name}
                   </Text>
                   <DeviceListItem
                     style={{
@@ -214,6 +174,7 @@ const mapStateToProps = state => {
     selectedDevice: state.main.selectedDevice,
     isBtSearching: state.main.isBtSearching,
     bluetoothStatus: state.main.bluetoothStatus,
+    vin: state.main.vin,
   };
 };
 
@@ -226,6 +187,7 @@ const mapDispatchToProps = dispatch => {
     setSelectedDevice: device => dispatch(setSelectedDevice(device)),
     setBtSearching: val => dispatch(setBtSearching(val)),
     setBluetoothStatus: status => dispatch(setBluetoothStatus(status)),
+    setVinNumber: nr => dispatch(setVinNumber(nr)),
   };
 };
 

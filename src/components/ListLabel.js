@@ -2,14 +2,10 @@ import React from 'react';
 import {TouchableNativeFeedback, Text, View, StyleSheet} from 'react-native';
 
 const ParamLabel = props => {
-  ////////?!!!!!!!!!!!    UNUSED
   return (
     <TouchableNativeFeedback
       onPress={props.onPress}
-      onLongPress={props.onLongPress}
-      // background={TouchableNativeFeedback.Ripple('blue')}
-      // delayPressIn={0}
-    >
+      onLongPress={props.onLongPress}>
       <View
         style={
           props.isSelected
@@ -43,7 +39,6 @@ const styles = StyleSheet.create({
     width: '70%',
     color: 'black',
     fontSize: 15,
-    // fontWeight: 'bold',
   },
   value: {
     width: '30%',

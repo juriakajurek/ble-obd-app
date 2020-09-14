@@ -10,7 +10,6 @@ import * as constants from './assets/constants';
 import MainScreen from './src/screens/MainScreen';
 import ParamsScreen from './src/screens/ParamsScreen';
 import BlackBoxMainScreen from './src/screens/BlackBoxMainScreen';
-import ExtrasScreen from './src/screens/ExtrasScreen';
 import SettingsScreen from './src/screens/SettingsScren';
 import TroubleCodesScreen from './src/screens/TroubleCodesScreen';
 
@@ -53,11 +52,6 @@ export default function App() {
           name="BlackBox"
           component={BlackBoxMainScreen}
           options={{...options, title: 'Czarna skrzynka'}}
-        />
-        <Stack.Screen
-          name="Extras"
-          component={ExtrasScreen}
-          options={{...options, title: 'Extras'}}
         />
         <Stack.Screen
           name="Settings"

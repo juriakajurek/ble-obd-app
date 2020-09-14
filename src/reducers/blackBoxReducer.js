@@ -5,8 +5,9 @@ import {
   SET_DY,
   SET_DX,
   SET_CUBE_INTERVAL_ID,
-  SET_DB_INTERVAL_ID,
+  SET_DB_TIMEOUT_ID,
   SET_TIME_INTERVAL,
+  SET_ROUTE_NUMBER,
 } from '../actions/types';
 
 const initialState = {
@@ -16,8 +17,9 @@ const initialState = {
   buttonText: 'Rozpocznij podróż',
   buttonIcon: 'play-circle',
   cubeIntervalId: null,
-  dbIntervalId: null,
+  dbTimeoutId: null,
   timeInterval: 6000,
+  routeNumber: null,
 };
 
 const blackBoxReducer = (state = initialState, action) => {
@@ -53,15 +55,20 @@ const blackBoxReducer = (state = initialState, action) => {
         ...state,
         cubeIntervalId: action.data,
       };
-    case SET_DB_INTERVAL_ID:
+    case SET_DB_TIMEOUT_ID:
       return {
         ...state,
-        dbIntervalId: action.data,
+        dbTimeoutId: action.data,
       };
     case SET_TIME_INTERVAL:
       return {
         ...state,
         timeInterval: action.data,
+      };
+    case SET_ROUTE_NUMBER:
+      return {
+        ...state,
+        routeNumber: action.data,
       };
     default:
       return state;

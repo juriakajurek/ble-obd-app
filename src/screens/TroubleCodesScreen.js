@@ -38,7 +38,7 @@ const TroubleCodesScreen = ({navigation}, props) => {
   const getTroubleCodes = async () => {
     await btModule.setupNotifications(selectedDevice, '03', val => {
       let tab = val.split(' ');
-      console.log(tab);
+      // console.log(tab);
 
       if (tab[0].toString().includes('ELM327')) {
         return '0';
@@ -47,7 +47,7 @@ const TroubleCodesScreen = ({navigation}, props) => {
       let index = tab.findIndex(el => {
         return el.toString() == '43';
       });
-      console.log('index: ' + index);
+      // console.log('index: ' + index);
 
       if (index != -1) {
         let hex = [tab[index + 1].toString()];
@@ -70,7 +70,7 @@ const TroubleCodesScreen = ({navigation}, props) => {
 
         dispatch(setTroubleCodes(codes));
 
-        console.log('codes: ' + codes);
+        // console.log('codes: ' + codes);
         return codes;
       } else return '0';
     });
@@ -78,17 +78,27 @@ const TroubleCodesScreen = ({navigation}, props) => {
 
   const clearTroubleCodes = async () => {
     await btModule.setupNotifications(selectedDevice, '04', val => {
+      React.createElement(
+        View,
+        null,
+        React.createElement(
+          MyButton,
+          {
+            color: 'blue',
+            shadowSize: 2,
+            style: {
+              backgroundColor: 'red',
+            },
+          },
+          'Kliknij mnie'
+        )
+      );
+
       // if (tab[0].toString().includes('ELM327')) {
       //   return '0';
       // }
-      let tab = val.split(' ');
-      console.log(tab);
-      Alert.alert(
-        '',
-        'Polecenie wykasowania błędów zostało wysłane.',
-        [{text: 'OK', onPress: () => {}}],
-        {cancelable: true}
-      );
+      // let tab = val.split(' ');
+      // console.log(tab);
     });
   };
 
@@ -98,15 +108,15 @@ const TroubleCodesScreen = ({navigation}, props) => {
       style={styles.codeLabel}
       iconName="search-web"
       onPress={() => {
-        searchInGoogle(item.toString());
+        searchInGoogle('fault code P' + item.toString());
       }}>
-      `P+${item.toString()}`
+      {'P' + item.toString()}
     </MainLabel>
   );
 
   return (
     <View style={styles.screen}>
-      {1 ? (
+      {selectedDevice.id ? (
         <View>
           <View style={styles.heading}>
             {!areCodesShown ? (
@@ -160,7 +170,14 @@ const TroubleCodesScreen = ({navigation}, props) => {
               style={styles.lastLabel}
               iconName="trash-can"
               onPress={() => {
-                clearTroubleCodes();
+                clearTroubleCodes().then(() => {
+                  Alert.alert(
+                    '',
+                    'Polecenie wykasowania błędów zostało wysłane.',
+                    [{text: 'OK', onPress: () => {}}],
+                    {cancelable: true}
+                  );
+                });
               }}>
               Kasuj błędy
             </MainLabel>
@@ -241,7 +258,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   list: {
-    width: '100%',
+    width: '90%',
   },
   link: {
     color: 'blue',
